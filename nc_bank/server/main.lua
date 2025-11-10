@@ -1,7 +1,22 @@
-local Locale = Locales['fr']
-
 -- Initialisation ESX
 ESX = exports["es_extended"]:getSharedObject()
+
+-- Messages serveur
+local function _U(str, ...)
+    if Locales and Locales[Config.Locale] and Locales[Config.Locale][str] then
+        return string.format(Locales[Config.Locale][str], ...)
+    else
+        return str
+    end
+end
+
+local Locale = setmetatable({}, {
+    __index = function(t, k)
+        return function(...)
+            return _U(k, ...)
+        end
+    end
+})
 
 -- Fonction pour ajouter une transaction à l'historique
 local function AddTransaction(identifier, transactionType, amount, balanceBefore, balanceAfter, receiver, sender, description)
