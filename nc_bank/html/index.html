@@ -11,255 +11,116 @@
 </head>
 <body>
     <div id="bank-container" style="display: none;">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">💳</div>
-                <h1 id="server-name">Finance Bank</h1>
+        <div class="bank-wrapper">
+            <!-- Header -->
+            <div class="bank-header">
+                <div class="bank-logo">
+                    <span class="logo-icon">🏦</span>
+                    <h1 id="server-name">NorthCounty Bank</h1>
+                </div>
+                <button class="close-btn" onclick="closeBank()">✕</button>
             </div>
 
-            <nav class="nav-menu">
-                <button class="nav-item active" data-section="accounts">
-                    <span class="icon">📊</span>
-                    <span>Accounts</span>
-                </button>
-                <button class="nav-item" data-section="transfer">
-                    <span class="icon">💸</span>
-                    <span>Transfer</span>
-                </button>
-                <button class="nav-item" data-section="deposit">
-                    <span class="icon">📥</span>
-                    <span>Deposit</span>
-                </button>
-                <button class="nav-item" data-section="withdraw">
-                    <span class="icon">📤</span>
-                    <span>Withdraw</span>
-                </button>
-                <button class="nav-item" data-section="history">
-                    <span class="icon">📜</span>
-                    <span>History</span>
-                </button>
-                <button class="nav-item" data-section="savings">
-                    <span class="icon">🏦</span>
-                    <span>Savings</span>
-                </button>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <button class="header-btn" onclick="closeBank()">
-                    <span>← Retour</span>
-                </button>
-                <div class="header-info">
-                    <span class="user-name" id="account-name">Chargement...</span>
-                    <span class="server-time" id="server-time">00:00 PM</span>
-                </div>
-            </header>
-
-            <!-- Accounts Section -->
-            <section class="section active" id="accounts-section">
-                <div class="accounts-header">
-                    <h2>Mes Comptes</h2>
-                </div>
-
-                <div class="accounts-grid">
-                    <!-- Checking Account Card -->
-                    <div class="account-card card-green">
-                        <div class="card-header">
-                            <span class="card-type">CHECKING ACCOUNT</span>
-                            <span class="card-status">Active</span>
+            <!-- Main Content -->
+            <div class="bank-content">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="account-info">
+                        <div class="account-label">Titulaire du compte</div>
+                        <div class="account-name" id="account-name">Chargement...</div>
+                        <div class="balance-display">
+                            <div class="balance-label">Solde bancaire</div>
+                            <div class="balance-amount" id="balance-amount">$0</div>
                         </div>
-                        <div class="card-number">•••• •••• •••• 4829</div>
-                        <div class="card-balance">
-                            <span class="balance-label">CURRENT BALANCE</span>
-                            <div class="balance-amount" id="balance-amount">$0.00</div>
-                        </div>
-                        <div class="card-footer">
-                            <span>VALID THRU</span>
-                            <span>08/28</span>
+                        <div class="cash-display">
+                            <div class="cash-label">Espèces</div>
+                            <div class="cash-amount" id="cash-amount">$0</div>
                         </div>
                     </div>
 
-                    <!-- Savings Account Card -->
-                    <div class="account-card card-blue">
-                        <div class="card-header">
-                            <span class="card-type">SAVINGS ACCOUNT</span>
-                            <span class="card-status">Active</span>
-                        </div>
-                        <div class="card-number">•••• •••• •••• 9890</div>
-                        <div class="card-balance">
-                            <span class="balance-label">CURRENT BALANCE</span>
-                            <div class="balance-amount" id="savings-total-balance">$0.00</div>
-                        </div>
-                        <div class="card-footer">
-                            <span>VALID THRU</span>
-                            <span>08/28</span>
-                        </div>
-                    </div>
+                    <nav class="nav-menu">
+                        <button class="nav-item active" data-section="operations">
+                            <span class="nav-icon">💰</span>
+                            Opérations
+                        </button>
+                        <button class="nav-item" data-section="transfer">
+                            <span class="nav-icon">💸</span>
+                            Virements
+                        </button>
+                        <button class="nav-item" data-section="savings">
+                            <span class="nav-icon">🏦</span>
+                            Épargne
+                        </button>
+                        <button class="nav-item" data-section="history">
+                            <span class="nav-icon">📊</span>
+                            Historique
+                        </button>
+                    </nav>
                 </div>
 
-                <!-- Cash Display -->
-                <div class="cash-info">
-                    <div class="cash-label">Espèces sur vous</div>
-                    <div class="cash-amount" id="cash-amount">$0.00</div>
-                </div>
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Operations Section -->
+                    <div class="section active" id="operations-section">
+                        <h2>Opérations bancaires</h2>
+                        <div class="operations-grid">
+                            <div class="operation-card">
+                                <div class="operation-icon">📥</div>
+                                <h3>Déposer de l'argent</h3>
+                                <input type="number" id="deposit-amount" placeholder="Montant" min="0">
+                                <button class="btn btn-primary" onclick="deposit()">Déposer</button>
+                            </div>
 
-                <!-- Recent Transactions -->
-                <div class="recent-transactions">
-                    <h3>Transactions Récentes</h3>
-                    <div id="recent-transactions-list">
-                        <!-- Will be populated by JS -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- Transfer Section -->
-            <section class="section" id="transfer-section">
-                <div class="section-header">
-                    <h2>Effectuer un Virement</h2>
-                </div>
-
-                <div class="form-container">
-                    <div class="form-group">
-                        <label>Sélectionner le bénéficiaire</label>
-                        <select id="transfer-target" class="form-control">
-                            <option value="">Chargement des joueurs...</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Montant à transférer</label>
-                        <div class="input-with-icon">
-                            <span class="input-icon">$</span>
-                            <input type="number" id="transfer-amount" class="form-control" placeholder="0.00" min="0">
+                            <div class="operation-card">
+                                <div class="operation-icon">📤</div>
+                                <h3>Retirer de l'argent</h3>
+                                <input type="number" id="withdraw-amount" placeholder="Montant" min="0">
+                                <button class="btn btn-danger" onclick="withdraw()">Retirer</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="info-box warning">
-                        <span class="info-icon">⚠️</span>
-                        <span>Des frais de 2% seront appliqués sur ce virement</span>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="transfer()">
-                        <span>Effectuer le virement</span>
-                        <span class="btn-icon">→</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Deposit Section -->
-            <section class="section" id="deposit-section">
-                <div class="section-header">
-                    <h2>Déposer de l'Argent</h2>
-                </div>
-
-                <div class="form-container">
-                    <div class="account-select">
-                        <div class="mini-card card-green active">
-                            <span>Checking Account</span>
-                            <span>•••• 4829</span>
+                    <!-- Transfer Section -->
+                    <div class="section" id="transfer-section">
+                        <h2>Effectuer un virement</h2>
+                        <div class="transfer-container">
+                            <div class="form-group">
+                                <label>Sélectionner le bénéficiaire</label>
+                                <select id="transfer-target" class="form-control">
+                                    <option value="">Chargement des joueurs...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Montant</label>
+                                <input type="number" id="transfer-amount" class="form-control" placeholder="Montant à transférer" min="0">
+                            </div>
+                            <div class="transfer-info">
+                                <p>⚠️ Des frais de 2% seront appliqués sur ce virement</p>
+                            </div>
+                            <button class="btn btn-primary btn-large" onclick="transfer()">Effectuer le virement</button>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Montant à déposer</label>
-                        <div class="input-with-icon">
-                            <span class="input-icon">$</span>
-                            <input type="number" id="deposit-amount" class="form-control" placeholder="0.00" min="0">
+                    <!-- Savings Section -->
+                    <div class="section" id="savings-section">
+                        <h2>Comptes d'épargne</h2>
+                        <button class="btn btn-success" onclick="createSavingsAccount()">+ Créer un compte d'épargne</button>
+                        <div id="savings-list" class="savings-list">
+                            <!-- Savings accounts will be loaded here -->
                         </div>
                     </div>
 
-                    <div class="balance-preview">
-                        <div class="preview-row">
-                            <span>Espèces disponibles</span>
-                            <span id="cash-preview">$0.00</span>
-                        </div>
-                        <div class="preview-row">
-                            <span>Nouveau solde bancaire</span>
-                            <span id="new-balance-preview">$0.00</span>
+                    <!-- History Section -->
+                    <div class="section" id="history-section">
+                        <h2>Historique des transactions</h2>
+                        <button class="btn btn-secondary" onclick="refreshHistory()">🔄 Actualiser</button>
+                        <div class="transactions-list" id="transactions-list">
+                            <!-- Transactions will be loaded here -->
                         </div>
                     </div>
-
-                    <button class="btn btn-success" onclick="deposit()">
-                        <span>Déposer</span>
-                        <span class="btn-icon">📥</span>
-                    </button>
                 </div>
-            </section>
-
-            <!-- Withdraw Section -->
-            <section class="section" id="withdraw-section">
-                <div class="section-header">
-                    <h2>Retirer de l'Argent</h2>
-                </div>
-
-                <div class="form-container">
-                    <div class="account-select">
-                        <div class="mini-card card-green active">
-                            <span>Checking Account</span>
-                            <span>•••• 4829</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Montant à retirer</label>
-                        <div class="input-with-icon">
-                            <span class="input-icon">$</span>
-                            <input type="number" id="withdraw-amount" class="form-control" placeholder="0.00" min="0">
-                        </div>
-                    </div>
-
-                    <div class="balance-preview">
-                        <div class="preview-row">
-                            <span>Solde actuel</span>
-                            <span id="current-balance-preview">$0.00</span>
-                        </div>
-                        <div class="preview-row">
-                            <span>Nouveau solde</span>
-                            <span id="new-balance-withdraw-preview">$0.00</span>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-danger" onclick="withdraw()">
-                        <span>Retirer</span>
-                        <span class="btn-icon">📤</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- History Section -->
-            <section class="section" id="history-section">
-                <div class="section-header">
-                    <h2>Historique des Transactions</h2>
-                    <button class="btn btn-secondary" onclick="refreshHistory()">
-                        <span class="btn-icon">🔄</span>
-                        <span>Actualiser</span>
-                    </button>
-                </div>
-
-                <div class="transactions-list" id="transactions-list">
-                    <!-- Transactions will be loaded here -->
-                </div>
-            </section>
-
-            <!-- Savings Section -->
-            <section class="section" id="savings-section">
-                <div class="section-header">
-                    <h2>Comptes d'Épargne</h2>
-                    <button class="btn btn-success" onclick="createSavingsAccount()">
-                        <span class="btn-icon">+</span>
-                        <span>Créer un compte</span>
-                    </button>
-                </div>
-
-                <div id="savings-list" class="savings-list">
-                    <!-- Savings accounts will be loaded here -->
-                </div>
-            </section>
-        </main>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

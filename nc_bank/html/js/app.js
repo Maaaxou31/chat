@@ -247,68 +247,6 @@ function displaySavings(savings) {
     });
 }
 
-// Update preview balances
-function updatePreviews() {
-    if (!currentData) return;
-
-    $('#cash-preview').text(formatMoney(currentData.account.cash));
-    $('#current-balance-preview').text(formatMoney(currentData.account.balance));
-
-    const depositAmount = parseInt($('#deposit-amount').val()) || 0;
-    const withdrawAmount = parseInt($('#withdraw-amount').val()) || 0;
-
-    $('#new-balance-preview').text(formatMoney(currentData.account.balance + depositAmount));
-    $('#new-balance-withdraw-preview').text(formatMoney(currentData.account.balance - withdrawAmount));
-}
-
-// Calculate total savings
-function calculateTotalSavings() {
-    if (!currentData || !currentData.savings) return 0;
-    return currentData.savings.reduce((total, account) => total + account.balance, 0);
-}
-
-// Update time display
-function updateTime() {
-    const now = new Date();
-    const hours = now.getHours() % 12 || 12;
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-    $('#server-time').text(`${hours}:${minutes} ${ampm}`);
-}
-
-// Display recent transactions (top 3)
-function displayRecentTransactions(transactions) {
-    const list = $('#recent-transactions-list');
-    list.empty();
-
-    const recent = transactions.slice(0, 3);
-
-    if (recent.length === 0) {
-        list.append('<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">Aucune transaction récente</p>');
-        return;
-    }
-
-    recent.forEach(transaction => {
-        const isPositive = transaction.transaction_type === 'deposit' ||
-                          transaction.transaction_type === 'transfer_received' ||
-                          transaction.transaction_type === 'interest';
-
-        const amountClass = isPositive ? 'positive' : 'negative';
-        const amountSign = isPositive ? '+' : '-';
-
-        list.append(`
-            <div class="transaction-item">
-                <div class="transaction-icon">${getTransactionIcon(transaction.transaction_type)}</div>
-                <div class="transaction-info">
-                    <div class="transaction-title">${getTransactionTypeName(transaction.transaction_type)}</div>
-                    <div class="transaction-date">${formatDate(transaction.created_at)}</div>
-                </div>
-                <div class="transaction-amount ${amountClass}">${amountSign}${formatMoney(transaction.amount)}</div>
-            </div>
-        `);
-    });
-}
-
 // NUI Messages
 window.addEventListener('message', function(event) {
     const data = event.data;
@@ -320,34 +258,21 @@ window.addEventListener('message', function(event) {
             $('#account-name').text(currentData.account.playerName);
             $('#balance-amount').text(formatMoney(currentData.account.balance));
             $('#cash-amount').text(formatMoney(currentData.account.cash));
-            $('#savings-total-balance').text(formatMoney(calculateTotalSavings()));
 
             displayTransactions(currentData.transactions);
-            displayRecentTransactions(currentData.transactions);
             displaySavings(currentData.savings);
             loadOnlinePlayers();
-            updatePreviews();
-            updateTime();
 
             $('#bank-container').fadeIn(300);
             break;
 
         case 'updateBalance':
-            if (currentData) {
-                currentData.account.balance = data.balance;
-                currentData.account.cash = data.cash;
-            }
             $('#balance-amount').text(formatMoney(data.balance));
             $('#cash-amount').text(formatMoney(data.cash));
-            updatePreviews();
             break;
 
         case 'updateSavings':
-            if (currentData) {
-                currentData.savings = data.savings;
-            }
             displaySavings(data.savings);
-            $('#savings-total-balance').text(formatMoney(calculateTotalSavings()));
             break;
     }
 });
@@ -365,12 +290,4 @@ $(document).ready(function() {
             closeBank();
         }
     });
-
-    // Update previews when amounts change
-    $('#deposit-amount, #withdraw-amount').on('input', function() {
-        updatePreviews();
-    });
-
-    // Update time every second
-    setInterval(updateTime, 1000);
 });
