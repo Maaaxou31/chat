@@ -1,3 +1,5 @@
+Locales = Locales or {}
+
 Locales['fr'] = {
     -- Interface générale
     ['press_to_access'] = 'Appuyez sur ~INPUT_CONTEXT~ pour accéder à la banque',

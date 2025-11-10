@@ -1,5 +1,8 @@
 Config = {}
 
+-- Langue
+Config.Locale = 'fr'
+
 -- Nom du serveur (affiché dans l'interface)
 Config.ServerName = "NorthCounty RP"
 
