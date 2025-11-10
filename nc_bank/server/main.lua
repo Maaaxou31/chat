@@ -392,10 +392,10 @@ if Config.EnableInterests then
     end)
 end
 
--- Commande pour ouvrir la banque (optionnel - pour tests)
-RegisterCommand('bank', function(source)
-    TriggerClientEvent('nc_bank:openUI', source)
-end)
+-- Commande pour ouvrir la banque (désactivée)
+-- RegisterCommand('bank', function(source)
+--     TriggerClientEvent('nc_bank:openUI', source)
+-- end)
 
 -- Event pour ATM depuis le client
 RegisterNetEvent('nc_bank:atmWithdraw', function(amount)
