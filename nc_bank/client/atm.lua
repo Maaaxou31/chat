@@ -49,13 +49,13 @@ CreateThread(function()
 
         if nearestATM then
             wait = 0
-            local playerPed = PlayerPedId()
-            local playerCoords = GetEntityCoords(playerPed)
-
             ESX.ShowHelpNotification(Locale['press_to_access_atm'])
 
             if IsControlJustReleased(0, 38) and not isAtATM then -- E key
-                OpenATMMenu()
+                isAtATM = true
+                OpenBankUI() -- Ouvre la même interface que les banques
+                Wait(500)
+                isAtATM = false
             end
         end
 
@@ -63,82 +63,7 @@ CreateThread(function()
     end
 end)
 
--- Menu ATM
-function OpenATMMenu()
-    isAtATM = true
-
-    ESX.TriggerServerCallback('nc_bank:getAccountInfo', function(data)
-        if data then
-            ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'atm_menu', {
-                title = 'Distributeur Automatique',
-                align = 'top-left',
-                elements = {
-                    {label = '💰 Solde: $' .. ESX.Math.GroupDigits(data.balance), value = 'balance'},
-                    {label = '💵 Espèces: $' .. ESX.Math.GroupDigits(data.cash), value = 'cash'},
-                    {label = '📥 Déposer', value = 'deposit'},
-                    {label = '📤 Retirer', value = 'withdraw'},
-                    {label = '🚪 Fermer', value = 'close'}
-                }
-            }, function(data2, menu)
-                if data2.current.value == 'deposit' then
-                    menu.close()
-                    OpenATMDepositMenu()
-                elseif data2.current.value == 'withdraw' then
-                    menu.close()
-                    OpenATMWithdrawMenu()
-                elseif data2.current.value == 'close' then
-                    menu.close()
-                    isAtATM = false
-                end
-            end, function(data2, menu)
-                menu.close()
-                isAtATM = false
-            end)
-        else
-            isAtATM = false
-        end
-    end)
-end
-
--- Menu de dépôt ATM
-function OpenATMDepositMenu()
-    ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'atm_deposit', {
-        title = 'Montant à déposer (max: $' .. ESX.Math.GroupDigits(Config.ATMDepositLimit) .. ')'
-    }, function(data, menu)
-        local amount = tonumber(data.value)
-
-        if amount == nil or amount <= 0 then
-            ESX.ShowNotification(Locale['amount_invalid'])
-        else
-            menu.close()
-            TriggerServerEvent('nc_bank:atmDeposit', amount)
-            isAtATM = false
-        end
-    end, function(data, menu)
-        menu.close()
-        isAtATM = false
-    end)
-end
-
--- Menu de retrait ATM
-function OpenATMWithdrawMenu()
-    ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'atm_withdraw', {
-        title = 'Montant à retirer (max: $' .. ESX.Math.GroupDigits(Config.ATMWithdrawLimit) .. ')'
-    }, function(data, menu)
-        local amount = tonumber(data.value)
-
-        if amount == nil or amount <= 0 then
-            ESX.ShowNotification(Locale['amount_invalid'])
-        else
-            menu.close()
-            TriggerServerEvent('nc_bank:atmWithdraw', amount)
-            isAtATM = false
-        end
-    end, function(data, menu)
-        menu.close()
-        isAtATM = false
-    end)
-end
-
 -- Export
-exports('OpenATM', OpenATMMenu)
+exports('OpenATM', function()
+    OpenBankUI()
+end)
