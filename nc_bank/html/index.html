@@ -12,71 +12,133 @@
 <body>
     <!-- Page de création de compte -->
     <div id="account-creation" style="display: none;">
-        <div class="creation-wrapper">
-            <div class="creation-header">
-                <span class="logo-icon">🏦</span>
-                <h1>Bienvenue chez NorthCounty Bank</h1>
-                <p class="subtitle">Créez votre compte bancaire personnel</p>
+        <div class="creation-wrapper-v2">
+            <!-- Top Bar -->
+            <div class="creation-topbar">
+                <div class="topbar-left">
+                    <div class="bank-logo-creation">
+                        <div class="logo-circle">🏦</div>
+                        <div class="logo-text">
+                            <span class="bank-name">NorthCounty Bank</span>
+                            <span class="bank-tagline">Votre confiance, notre priorité</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="steps-indicator">
+                        <div class="step active">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Bienvenue</div>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Création</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="close-btn-creation" onclick="closeBank()">✕</button>
             </div>
 
-            <div class="creation-content">
-                <div class="welcome-message">
-                    <div class="welcome-icon">✨</div>
-                    <h2>Félicitations!</h2>
-                    <p>Vous êtes sur le point de créer votre premier compte bancaire.</p>
-                </div>
+            <!-- Main Content -->
+            <div class="creation-main">
+                <!-- Left Side - Info -->
+                <div class="creation-left">
+                    <div class="welcome-section">
+                        <h1 class="welcome-title">Bienvenue</h1>
+                        <p class="welcome-subtitle">Ouvrez votre compte en quelques secondes</p>
 
-                <div class="account-preview">
-                    <h3>Votre compte comprendra:</h3>
-                    <div class="features-list">
-                        <div class="feature-item">
-                            <span class="feature-icon">💳</span>
-                            <div class="feature-text">
-                                <strong>Carte bancaire</strong>
-                                <p>Avec numéro unique et code CVV</p>
+                        <div class="player-info-card">
+                            <div class="info-label">Titulaire du compte</div>
+                            <div class="info-value" id="account-holder-name">Chargement...</div>
+                        </div>
+
+                        <div class="bonus-badge">
+                            <div class="bonus-icon">🎁</div>
+                            <div class="bonus-text">
+                                <div class="bonus-title">Bonus de bienvenue</div>
+                                <div class="bonus-amount" id="starting-money">$5,000</div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">🔢</span>
-                            <div class="feature-text">
-                                <strong>IBAN personnel</strong>
-                                <p>Pour recevoir et envoyer des virements</p>
+                    </div>
+
+                    <div class="features-modern">
+                        <div class="features-title">Ce que vous obtenez</div>
+                        <div class="feature-modern">
+                            <div class="feature-icon-modern">💳</div>
+                            <div class="feature-content">
+                                <div class="feature-name">Carte bancaire virtuelle</div>
+                                <div class="feature-desc">Numéro 16 chiffres + CVV sécurisé</div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">🔒</span>
-                            <div class="feature-text">
-                                <strong>Code PIN</strong>
-                                <p>Sécurisez votre compte (par défaut: 1234)</p>
+                        <div class="feature-modern">
+                            <div class="feature-icon-modern">🔢</div>
+                            <div class="feature-content">
+                                <div class="feature-name">IBAN unique</div>
+                                <div class="feature-desc">Pour tous vos virements</div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">💰</span>
-                            <div class="feature-text">
-                                <strong id="starting-money">$5,000</strong>
-                                <p>Argent de départ offert</p>
+                        <div class="feature-modern">
+                            <div class="feature-icon-modern">🔒</div>
+                            <div class="feature-content">
+                                <div class="feature-name">Code PIN personnalisable</div>
+                                <div class="feature-desc">Sécurité maximale de votre compte</div>
+                            </div>
+                        </div>
+                        <div class="feature-modern">
+                            <div class="feature-icon-modern">📱</div>
+                            <div class="feature-content">
+                                <div class="feature-name">Accès 24/7</div>
+                                <div class="feature-desc">Banques et distributeurs</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="creation-form">
-                    <div class="form-group">
-                        <label>Nom du titulaire</label>
-                        <input type="text" id="account-holder-name" readonly>
+                <!-- Right Side - Action -->
+                <div class="creation-right">
+                    <div class="action-card">
+                        <div class="card-icon-big">✨</div>
+                        <h2 class="card-title">Prêt à commencer?</h2>
+                        <p class="card-description">
+                            En cliquant sur "Créer mon compte", vous acceptez nos conditions générales
+                            d'utilisation et notre politique de confidentialité.
+                        </p>
+
+                        <div class="security-badges">
+                            <div class="badge-item">
+                                <div class="badge-icon">🔐</div>
+                                <div class="badge-text">Sécurisé</div>
+                            </div>
+                            <div class="badge-item">
+                                <div class="badge-icon">⚡</div>
+                                <div class="badge-text">Instantané</div>
+                            </div>
+                            <div class="badge-item">
+                                <div class="badge-icon">✅</div>
+                                <div class="badge-text">Gratuit</div>
+                            </div>
+                        </div>
+
+                        <button class="btn-create-modern" onclick="createAccount()">
+                            <span class="btn-text">Créer mon compte</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+
+                        <div class="terms-modern">
+                            <p>🛡️ Vos données sont protégées et cryptées</p>
+                        </div>
                     </div>
 
-                    <div class="terms-notice">
-                        <p>⚠️ En créant ce compte, vous acceptez les conditions d'utilisation de NorthCounty Bank.</p>
+                    <div class="testimonial">
+                        <div class="testimonial-quote">"</div>
+                        <p class="testimonial-text">
+                            Interface intuitive et sécurisée. J'adore pouvoir gérer mes finances facilement!
+                        </p>
+                        <div class="testimonial-author">- Utilisateur NorthCounty Bank</div>
                     </div>
-
-                    <button class="btn btn-primary btn-large" onclick="createAccount()">
-                        🎉 Créer mon compte bancaire
-                    </button>
                 </div>
             </div>
-
-            <button class="close-btn-creation" onclick="closeBank()">✕</button>
         </div>
     </div>
 

@@ -506,7 +506,7 @@ function paySalary(employeeId) {
 
 // Show account creation page
 function showAccountCreation(playerName, startingMoney) {
-    $('#account-holder-name').val(playerName);
+    $('#account-holder-name').text(playerName);
     $('#starting-money').text('$' + startingMoney.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
     $('#account-creation').fadeIn(300);
 }
