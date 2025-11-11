@@ -246,7 +246,10 @@ function loadCards() {
 
     filteredCards.forEach(card => {
         const cardTypeName = card.card_type === 'debit' ? 'Carte de Débit' : 'Carte de Crédit';
-        const expiryDate = card.expiry_date ? new Date(card.expiry_date).toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' }) : '--/--';
+        const expiryDate = card.expiry_date || '--/--';
+
+        // Formater le numéro de carte (XXXX XXXX XXXX XXXX)
+        const formattedCardNumber = card.card_number.match(/.{1,4}/g).join(' ');
 
         list.append(`
             <div class="bank-card">
@@ -254,7 +257,7 @@ function loadCards() {
                     <div class="card-chip"></div>
                     <div class="card-type">${cardTypeName}</div>
                 </div>
-                <div class="card-number">${card.card_number}</div>
+                <div class="card-number">${formattedCardNumber}</div>
                 <div class="card-footer">
                     <div class="card-info">
                         <div class="card-label">Titulaire</div>
@@ -263,6 +266,10 @@ function loadCards() {
                     <div class="card-info">
                         <div class="card-label">Expire le</div>
                         <div class="card-value">${expiryDate}</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-label">CVV</div>
+                        <div class="card-value">${card.cvv || '***'}</div>
                     </div>
                 </div>
             </div>

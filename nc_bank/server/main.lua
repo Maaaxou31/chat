@@ -82,12 +82,20 @@ local function CreatePersonalAccount(identifier, playerName)
     })
 
     -- Créer une carte bancaire pour ce compte
-    local expiryDate = os.date('%Y-%m-%d', os.time() + (Config.CardValidityMonths * 30 * 24 * 60 * 60))
-    MySQL.insert('INSERT INTO nc_bank_cards (account_id, card_number, card_type, expiry_date) VALUES (?, ?, ?, ?)', {
+    local cardNumber = string.sub(iban:gsub('[^0-9]', ''), 1, 16) -- Extraire 16 chiffres de l'IBAN
+    if #cardNumber < 16 then
+        cardNumber = cardNumber .. string.rep('0', 16 - #cardNumber) -- Compléter avec des 0
+    end
+    local cvv = tostring(math.random(100, 999))
+    local expiryDate = os.date('%m/%y', os.time() + (Config.CardValidityMonths * 30 * 24 * 60 * 60))
+
+    MySQL.insert('INSERT INTO nc_bank_cards (account_id, card_number, cvv, expiry_date, card_type, is_active) VALUES (?, ?, ?, ?, ?, ?)', {
         accountId,
-        iban, -- On utilise l'IBAN comme numéro de carte
+        cardNumber,
+        cvv,
+        expiryDate,
         'debit',
-        expiryDate
+        1
     })
 
     return accountId, iban
@@ -108,19 +116,28 @@ local function CreateBusinessAccount(identifier, playerName, jobName, jobLabel)
     })
 
     -- Créer les détails du compte entreprise
-    MySQL.insert('INSERT INTO nc_business_accounts (account_id, business_name, job_name) VALUES (?, ?, ?)', {
+    MySQL.insert('INSERT INTO nc_business_accounts (account_id, business_name, job_name, owner_identifier) VALUES (?, ?, ?, ?)', {
         accountId,
         jobLabel,
-        jobName
+        jobName,
+        identifier
     })
 
     -- Créer une carte bancaire pour ce compte
-    local expiryDate = os.date('%Y-%m-%d', os.time() + (Config.CardValidityMonths * 30 * 24 * 60 * 60))
-    MySQL.insert('INSERT INTO nc_bank_cards (account_id, card_number, card_type, expiry_date) VALUES (?, ?, ?, ?)', {
+    local cardNumber = string.sub(iban:gsub('[^0-9]', ''), 1, 16) -- Extraire 16 chiffres de l'IBAN
+    if #cardNumber < 16 then
+        cardNumber = cardNumber .. string.rep('0', 16 - #cardNumber) -- Compléter avec des 0
+    end
+    local cvv = tostring(math.random(100, 999))
+    local expiryDate = os.date('%m/%y', os.time() + (Config.CardValidityMonths * 30 * 24 * 60 * 60))
+
+    MySQL.insert('INSERT INTO nc_bank_cards (account_id, card_number, cvv, expiry_date, card_type, is_active) VALUES (?, ?, ?, ?, ?, ?)', {
         accountId,
-        iban,
+        cardNumber,
+        cvv,
+        expiryDate,
         'debit',
-        expiryDate
+        1
     })
 
     return accountId, iban
