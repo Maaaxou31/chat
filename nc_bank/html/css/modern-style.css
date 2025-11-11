@@ -1,0 +1,644 @@
+/* ============================================
+   MODERN INTERFACE STYLES
+   ============================================ */
+
+/* PIN Verification Page */
+.pin-verification-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 50px;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.pin-card {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 60px 50px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.pin-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.pin-title {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.pin-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+.pin-input-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.pin-digit {
+    width: 70px;
+    height: 80px;
+    font-size: 32px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    color: white;
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.pin-digit:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);
+    transform: scale(1.05);
+}
+
+.pin-security-note {
+    margin-top: 25px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+}
+
+.player-name-header {
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+/* Modern Navigation Tabs (Top Bar) */
+.nav-tabs-modern {
+    display: flex;
+    gap: 5px;
+}
+
+.tab-btn-modern {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.tab-btn-modern:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.tab-btn-modern.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.tab-btn-modern .tab-icon {
+    font-size: 18px;
+}
+
+/* Modern Account Selector */
+.account-selector-modern {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-info-modern {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+
+.player-name-modern {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.account-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.account-btn-modern {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.account-btn-modern:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.account-btn-modern.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.account-icon {
+    font-size: 18px;
+}
+
+/* Modern Content Wrapper */
+.content-wrapper-modern {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 40px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.content-wrapper-modern::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content-wrapper-modern::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.content-wrapper-modern::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.content-wrapper-modern::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Modern Cards */
+.card-modern {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    margin-bottom: 20px;
+}
+
+.card-modern:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.card-modern h3 {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Modern Inputs */
+.input-modern {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.input-modern:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.input-modern::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Modern Buttons */
+.btn-modern {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.btn-success-modern {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success-modern:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+}
+
+.btn-danger-modern {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger-modern:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+}
+
+.btn-secondary-modern {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary-modern:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-block-modern {
+    width: 100%;
+}
+
+/* Modern Form Groups */
+.form-group-modern {
+    margin-bottom: 18px;
+}
+
+.form-group-modern label {
+    display: block;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* Page Titles */
+.page-title-modern {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ============================================
+   HOME TAB MODERN
+   ============================================ */
+
+.home-grid-modern {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.home-left,
+.home-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.balance-display-modern {
+    text-align: center;
+    padding: 30px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.balance-amount-modern {
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.balance-label-modern {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cash-display-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.cash-label-modern {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.cash-amount-modern {
+    color: #fbbf24;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.info-item-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-item-modern:last-child {
+    border-bottom: none;
+}
+
+.info-label-modern {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+}
+
+.info-value-modern {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pin-display-modern {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-icon-modern {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-icon-modern:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.quick-actions-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.action-buttons-modern {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.transfer-form-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.transfer-info-modern {
+    background: rgba(251, 191, 36, 0.15);
+    padding: 12px;
+    border-radius: 10px;
+    color: #fbbf24;
+    font-size: 13px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.recent-list-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.recent-item-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.recent-item-modern:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   CARDS TAB MODERN
+   ============================================ */
+
+.cards-page-modern {
+    width: 100%;
+}
+
+.cards-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+}
+
+/* ============================================
+   TRANSACTIONS TAB MODERN
+   ============================================ */
+
+.transactions-page-modern {
+    width: 100%;
+}
+
+.filters-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.filter-buttons-modern {
+    display: flex;
+    gap: 12px;
+}
+
+.transactions-list-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.transaction-item-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.transaction-item-modern:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   ACCOUNT TAB MODERN
+   ============================================ */
+
+.account-page-modern {
+    width: 100%;
+}
+
+.account-info-modern {
+    display: flex;
+    flex-direction: column;
+}
+
+.pin-change-form-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.employees-list-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.employee-item-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.employee-item-modern:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE MODERN
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .home-grid-modern {
+        grid-template-columns: 1fr;
+    }
+
+    .cards-grid-modern {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-grid-modern {
+        grid-template-columns: 1fr;
+    }
+
+    .creation-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-tabs-modern {
+        flex-wrap: wrap;
+    }
+
+    .account-selector-modern {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .action-buttons-modern {
+        grid-template-columns: 1fr;
+    }
+}

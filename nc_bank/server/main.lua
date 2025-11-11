@@ -269,6 +269,75 @@ ESX.RegisterServerCallback('nc_bank:getFullAccountInfo', function(source, cb)
     cb(data)
 end)
 
+-- Vérifier le code PIN
+ESX.RegisterServerCallback('nc_bank:verifyPIN', function(source, cb, pin)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return cb(false, nil) end
+
+    local accounts = GetPlayerAccounts(xPlayer.identifier)
+    local personalAccount = nil
+
+    -- Récupérer le compte personnel
+    for _, account in pairs(accounts) do
+        if account.account_type == 'personal' then
+            personalAccount = account
+            break
+        end
+    end
+
+    if not personalAccount then
+        return cb(false, nil)
+    end
+
+    -- Vérifier le PIN
+    if personalAccount.pin_code == pin then
+        -- PIN correct, récupérer toutes les données du compte
+        local businessAccount = nil
+        for _, account in pairs(accounts) do
+            if account.account_type == 'business' then
+                businessAccount = account
+                break
+            end
+        end
+
+        -- Récupérer les cartes bancaires
+        local cards = {}
+        local personalCards = MySQL.query.await('SELECT * FROM nc_bank_cards WHERE account_id = ?', {personalAccount.id})
+        for _, card in pairs(personalCards) do
+            card.account_type = 'personal'
+            table.insert(cards, card)
+        end
+        if businessAccount then
+            local businessCards = MySQL.query.await('SELECT * FROM nc_bank_cards WHERE account_id = ?', {businessAccount.id})
+            for _, card in pairs(businessCards) do
+                card.account_type = 'business'
+                table.insert(cards, card)
+            end
+        end
+
+        -- Récupérer les transactions récentes
+        local recentTransactions = MySQL.query.await('SELECT * FROM nc_bank_transactions WHERE account_id = ? ORDER BY created_at DESC LIMIT ?', {
+            personalAccount.id,
+            Config.RecentTransactionsCount
+        })
+
+        local data = {
+            playerName = xPlayer.getName(),
+            cash = xPlayer.getMoney(),
+            serverName = Config.ServerName,
+            personalAccount = personalAccount,
+            businessAccount = businessAccount,
+            cards = cards,
+            recentTransactions = recentTransactions
+        }
+
+        cb(true, data)
+    else
+        -- PIN incorrect
+        cb(false, nil)
+    end
+end)
+
 -- Récupérer l'historique complet des transactions d'un compte
 ESX.RegisterServerCallback('nc_bank:getTransactions', function(source, cb, accountId)
     local xPlayer = ESX.GetPlayerFromId(source)

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NorthCounty Bank V2</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/modern-style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -142,125 +143,195 @@
         </div>
     </div>
 
+    <!-- Page de vérification PIN -->
+    <div id="pin-verification" style="display: none;">
+        <div class="creation-wrapper-v2">
+            <!-- Top Bar -->
+            <div class="creation-topbar">
+                <div class="topbar-left">
+                    <div class="bank-logo-creation">
+                        <div class="logo-circle">🏦</div>
+                        <div class="logo-text">
+                            <span class="bank-name">NorthCounty Bank</span>
+                            <span class="bank-tagline">Votre confiance, notre priorité</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="player-name-header" id="pin-player-name">Chargement...</div>
+                </div>
+                <button class="close-btn-creation" onclick="closeBank()">✕</button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="creation-main">
+                <div class="pin-verification-content">
+                    <div class="pin-card">
+                        <div class="pin-icon">🔐</div>
+                        <h2 class="pin-title">Accès Sécurisé</h2>
+                        <p class="pin-subtitle">Veuillez entrer votre code PIN à 4 chiffres</p>
+
+                        <div class="pin-input-group">
+                            <input type="password" maxlength="1" class="pin-digit" id="pin-1" oninput="movePinFocus(1)">
+                            <input type="password" maxlength="1" class="pin-digit" id="pin-2" oninput="movePinFocus(2)">
+                            <input type="password" maxlength="1" class="pin-digit" id="pin-3" oninput="movePinFocus(3)">
+                            <input type="password" maxlength="1" class="pin-digit" id="pin-4" oninput="movePinFocus(4)">
+                        </div>
+
+                        <button class="btn-create-modern" onclick="verifyPIN()">
+                            <span class="btn-text">Déverrouiller</span>
+                            <span class="btn-icon">🔓</span>
+                        </button>
+
+                        <div class="pin-security-note">
+                            🛡️ Votre code PIN protège l'accès à votre compte
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Interface bancaire normale -->
     <div id="bank-container" style="display: none;">
-        <div class="bank-wrapper">
-            <!-- Header -->
-            <div class="bank-header">
-                <div class="bank-logo">
-                    <span class="logo-icon">🏦</span>
-                    <h1 id="server-name">NorthCounty Bank</h1>
+        <div class="creation-wrapper-v2">
+            <!-- Top Bar -->
+            <div class="creation-topbar">
+                <div class="topbar-left">
+                    <div class="bank-logo-creation">
+                        <div class="logo-circle">🏦</div>
+                        <div class="logo-text">
+                            <span class="bank-name">NorthCounty Bank</span>
+                            <span class="bank-tagline">Votre confiance, notre priorité</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="header-info">
-                    <div class="player-name" id="player-name">Chargement...</div>
+                <div class="topbar-right">
+                    <!-- Navigation Tabs -->
+                    <div class="nav-tabs-modern">
+                        <button class="tab-btn-modern active" data-tab="home">
+                            <span class="tab-icon">🏠</span>
+                            <span>Accueil</span>
+                        </button>
+                        <button class="tab-btn-modern" data-tab="card">
+                            <span class="tab-icon">💳</span>
+                            <span>Cartes</span>
+                        </button>
+                        <button class="tab-btn-modern" data-tab="transactions">
+                            <span class="tab-icon">📊</span>
+                            <span>Transactions</span>
+                        </button>
+                        <button class="tab-btn-modern" data-tab="account">
+                            <span class="tab-icon">⚙️</span>
+                            <span>Compte</span>
+                        </button>
+                    </div>
                 </div>
-                <button class="close-btn" onclick="closeBank()">✕</button>
+                <button class="close-btn-creation" onclick="closeBank()">✕</button>
             </div>
 
             <!-- Account Selector -->
-            <div class="account-selector">
-                <button class="account-btn active" data-account="personal" id="personal-btn">
-                    💳 Compte Personnel
-                </button>
-                <button class="account-btn" data-account="business" id="business-btn" style="display: none;">
-                    🏢 Compte Entreprise
-                </button>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="nav-tabs">
-                <button class="tab-btn active" data-tab="home">
-                    <span class="tab-icon">🏠</span>
-                    Accueil
-                </button>
-                <button class="tab-btn" data-tab="card">
-                    <span class="tab-icon">💳</span>
-                    Carte Bancaire
-                </button>
-                <button class="tab-btn" data-tab="transactions">
-                    <span class="tab-icon">📊</span>
-                    Transactions
-                </button>
-                <button class="tab-btn" data-tab="account">
-                    <span class="tab-icon">⚙️</span>
-                    Compte
-                </button>
+            <div class="account-selector-modern">
+                <div class="player-info-modern">
+                    <span class="player-label">Titulaire:</span>
+                    <span class="player-name-modern" id="player-name">Chargement...</span>
+                </div>
+                <div class="account-buttons">
+                    <button class="account-btn-modern active" data-account="personal" id="personal-btn">
+                        <span class="account-icon">💳</span>
+                        <span class="account-text">Personnel</span>
+                    </button>
+                    <button class="account-btn-modern" data-account="business" id="business-btn" style="display: none;">
+                        <span class="account-icon">🏢</span>
+                        <span class="account-text">Entreprise</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Content Area -->
-            <div class="content-wrapper">
+            <div class="content-wrapper-modern">
                 <!-- HOME TAB -->
                 <div class="tab-content active" id="home-tab">
-                    <div class="home-grid">
-                        <!-- Account Overview -->
-                        <div class="overview-card">
-                            <h3>Aperçu du compte</h3>
-                            <div class="balance-display">
-                                <div class="balance-label">Solde disponible</div>
-                                <div class="balance-amount" id="home-balance">$0</div>
-                            </div>
-                            <div class="cash-display">
-                                <div class="cash-label">Espèces sur vous</div>
-                                <div class="cash-amount" id="home-cash">$0</div>
-                            </div>
-                            <div class="account-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">IBAN:</span>
-                                    <span class="detail-value" id="home-iban">-</span>
+                    <div class="home-grid-modern">
+                        <!-- Left Column -->
+                        <div class="home-left">
+                            <!-- Account Overview -->
+                            <div class="card-modern">
+                                <h3>💰 Solde du compte</h3>
+                                <div class="balance-display-modern">
+                                    <div class="balance-amount-modern" id="home-balance">$0</div>
+                                    <div class="balance-label-modern">Solde disponible</div>
                                 </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Code PIN:</span>
-                                    <span class="detail-value pin-masked" id="home-pin">****</span>
-                                    <button class="btn-icon" onclick="togglePIN()">👁️</button>
+                                <div class="cash-display-modern">
+                                    <span class="cash-label-modern">💵 Espèces:</span>
+                                    <span class="cash-amount-modern" id="home-cash">$0</span>
+                                </div>
+                            </div>
+
+                            <!-- Account Info -->
+                            <div class="card-modern">
+                                <h3>📋 Informations du compte</h3>
+                                <div class="info-item-modern">
+                                    <span class="info-label-modern">IBAN</span>
+                                    <span class="info-value-modern" id="home-iban">-</span>
+                                </div>
+                                <div class="info-item-modern">
+                                    <span class="info-label-modern">Code PIN</span>
+                                    <div class="pin-display-modern">
+                                        <span class="info-value-modern pin-masked" id="home-pin">****</span>
+                                        <button class="btn-icon-modern" onclick="togglePIN()">👁️</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="card-modern">
+                                <h3>⚡ Actions rapides</h3>
+                                <div class="quick-actions-modern">
+                                    <input type="number" id="quick-amount" placeholder="Montant" min="0" class="input-modern">
+                                    <div class="action-buttons-modern">
+                                        <button class="btn-modern btn-success-modern" onclick="quickDeposit()">
+                                            <span>📥</span>
+                                            Déposer
+                                        </button>
+                                        <button class="btn-modern btn-danger-modern" onclick="quickWithdraw()">
+                                            <span>📤</span>
+                                            Retirer
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Quick Actions -->
-                        <div class="actions-card">
-                            <h3>Actions rapides</h3>
-                            <div class="quick-actions">
-                                <div class="action-item">
-                                    <label>Montant</label>
-                                    <input type="number" id="quick-amount" placeholder="0" min="0">
-                                </div>
-                                <div class="action-buttons">
-                                    <button class="btn btn-success" onclick="quickDeposit()">
-                                        📥 Déposer
+                        <!-- Right Column -->
+                        <div class="home-right">
+                            <!-- Transfer -->
+                            <div class="card-modern">
+                                <h3>💸 Effectuer un virement</h3>
+                                <div class="transfer-form-modern">
+                                    <div class="form-group-modern">
+                                        <label>IBAN de destination</label>
+                                        <input type="text" id="transfer-iban" placeholder="NC..." maxlength="34" class="input-modern">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label>Montant</label>
+                                        <input type="number" id="transfer-amount" placeholder="0" min="0" class="input-modern">
+                                    </div>
+                                    <div class="transfer-info-modern">
+                                        ⚠️ Frais de virement: 1% (min 5$, max 250$)
+                                    </div>
+                                    <button class="btn-modern btn-primary-modern btn-block-modern" onclick="makeTransfer()">
+                                        Envoyer le virement →
                                     </button>
-                                    <button class="btn btn-danger" onclick="quickWithdraw()">
-                                        📤 Retirer
-                                    </button>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Transfer -->
-                        <div class="transfer-card">
-                            <h3>Effectuer un virement</h3>
-                            <div class="transfer-form">
-                                <div class="form-group">
-                                    <label>IBAN de destination</label>
-                                    <input type="text" id="transfer-iban" placeholder="NC..." maxlength="34">
+                            <!-- Recent Transactions -->
+                            <div class="card-modern">
+                                <h3>📊 Transactions récentes</h3>
+                                <div class="recent-list-modern" id="recent-transactions">
+                                    <!-- Populated by JS -->
                                 </div>
-                                <div class="form-group">
-                                    <label>Montant</label>
-                                    <input type="number" id="transfer-amount" placeholder="0" min="0">
-                                </div>
-                                <div class="transfer-info">
-                                    ⚠️ Frais de virement: 1% (min 5$, max 250$)
-                                </div>
-                                <button class="btn btn-primary btn-block" onclick="makeTransfer()">
-                                    💸 Envoyer le virement
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Recent Transactions -->
-                        <div class="recent-card">
-                            <h3>Transactions récentes</h3>
-                            <div class="recent-list" id="recent-transactions">
-                                <!-- Populated by JS -->
                             </div>
                         </div>
                     </div>
@@ -268,9 +339,9 @@
 
                 <!-- CARD TAB -->
                 <div class="tab-content" id="card-tab">
-                    <div class="card-display-container">
-                        <h2>Vos cartes bancaires</h2>
-                        <div class="cards-grid" id="cards-list">
+                    <div class="cards-page-modern">
+                        <h2 class="page-title-modern">💳 Vos cartes bancaires</h2>
+                        <div class="cards-grid-modern" id="cards-list">
                             <!-- Populated by JS -->
                         </div>
                     </div>
@@ -278,100 +349,111 @@
 
                 <!-- TRANSACTIONS TAB -->
                 <div class="tab-content" id="transactions-tab">
-                    <div class="transactions-container">
-                        <h2>Historique des transactions</h2>
+                    <div class="transactions-page-modern">
+                        <h2 class="page-title-modern">📊 Historique des transactions</h2>
 
                         <!-- Search Filters -->
-                        <div class="search-filters">
-                            <div class="filter-group">
-                                <label>Montant minimum</label>
-                                <input type="number" id="filter-min-amount" placeholder="0" min="0">
+                        <div class="card-modern">
+                            <h3>🔍 Filtres de recherche</h3>
+                            <div class="filters-grid-modern">
+                                <div class="form-group-modern">
+                                    <label>Montant minimum</label>
+                                    <input type="number" id="filter-min-amount" placeholder="0" min="0" class="input-modern">
+                                </div>
+                                <div class="form-group-modern">
+                                    <label>Montant maximum</label>
+                                    <input type="number" id="filter-max-amount" placeholder="0" min="0" class="input-modern">
+                                </div>
+                                <div class="form-group-modern">
+                                    <label>Date de début</label>
+                                    <input type="date" id="filter-start-date" class="input-modern">
+                                </div>
+                                <div class="form-group-modern">
+                                    <label>Date de fin</label>
+                                    <input type="date" id="filter-end-date" class="input-modern">
+                                </div>
                             </div>
-                            <div class="filter-group">
-                                <label>Montant maximum</label>
-                                <input type="number" id="filter-max-amount" placeholder="0" min="0">
-                            </div>
-                            <div class="filter-group">
-                                <label>Date de début</label>
-                                <input type="date" id="filter-start-date">
-                            </div>
-                            <div class="filter-group">
-                                <label>Date de fin</label>
-                                <input type="date" id="filter-end-date">
-                            </div>
-                            <div class="filter-buttons">
-                                <button class="btn btn-primary" onclick="searchTransactions()">
+                            <div class="filter-buttons-modern">
+                                <button class="btn-modern btn-primary-modern" onclick="searchTransactions()">
                                     🔍 Rechercher
                                 </button>
-                                <button class="btn btn-secondary" onclick="resetFilters()">
+                                <button class="btn-modern btn-secondary-modern" onclick="resetFilters()">
                                     🔄 Réinitialiser
                                 </button>
                             </div>
                         </div>
 
                         <!-- Transactions List -->
-                        <div class="all-transactions" id="all-transactions">
-                            <!-- Populated by JS -->
+                        <div class="card-modern">
+                            <h3>📋 Liste des transactions</h3>
+                            <div class="transactions-list-modern" id="all-transactions">
+                                <!-- Populated by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ACCOUNT TAB -->
                 <div class="tab-content" id="account-tab">
-                    <div class="account-settings-container">
-                        <h2>Paramètres du compte</h2>
+                    <div class="account-page-modern">
+                        <h2 class="page-title-modern">⚙️ Paramètres du compte</h2>
 
                         <!-- Personal Account Settings -->
-                        <div class="settings-section" id="personal-settings">
-                            <h3>Sécurité</h3>
-                            <div class="pin-change-form">
-                                <div class="form-group">
-                                    <label>Code PIN actuel</label>
-                                    <input type="password" id="old-pin" placeholder="****" maxlength="4">
+                        <div id="personal-settings">
+                            <div class="card-modern">
+                                <h3>🔒 Sécurité</h3>
+                                <div class="pin-change-form-modern">
+                                    <div class="form-group-modern">
+                                        <label>Code PIN actuel</label>
+                                        <input type="password" id="old-pin" placeholder="****" maxlength="4" class="input-modern">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label>Nouveau code PIN</label>
+                                        <input type="password" id="new-pin" placeholder="****" maxlength="4" class="input-modern">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label>Confirmer le nouveau code PIN</label>
+                                        <input type="password" id="confirm-pin" placeholder="****" maxlength="4" class="input-modern">
+                                    </div>
+                                    <button class="btn-modern btn-primary-modern" onclick="changePIN()">
+                                        Modifier le code PIN
+                                    </button>
                                 </div>
-                                <div class="form-group">
-                                    <label>Nouveau code PIN</label>
-                                    <input type="password" id="new-pin" placeholder="****" maxlength="4">
-                                </div>
-                                <div class="form-group">
-                                    <label>Confirmer le nouveau code PIN</label>
-                                    <input type="password" id="confirm-pin" placeholder="****" maxlength="4">
-                                </div>
-                                <button class="btn btn-primary" onclick="changePIN()">
-                                    🔒 Modifier le code PIN
-                                </button>
                             </div>
 
-                            <h3 style="margin-top: 30px;">Informations du compte</h3>
-                            <div class="account-info-display">
-                                <div class="info-row">
-                                    <span class="info-label">Type de compte:</span>
-                                    <span class="info-value" id="account-type-display">-</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">Nom du compte:</span>
-                                    <span class="info-value" id="account-name-display">-</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">IBAN:</span>
-                                    <span class="info-value" id="account-iban-display">-</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">Date de création:</span>
-                                    <span class="info-value" id="account-created-display">-</span>
+                            <div class="card-modern">
+                                <h3>📋 Informations du compte</h3>
+                                <div class="account-info-modern">
+                                    <div class="info-item-modern">
+                                        <span class="info-label-modern">Type de compte</span>
+                                        <span class="info-value-modern" id="account-type-display">-</span>
+                                    </div>
+                                    <div class="info-item-modern">
+                                        <span class="info-label-modern">Nom du compte</span>
+                                        <span class="info-value-modern" id="account-name-display">-</span>
+                                    </div>
+                                    <div class="info-item-modern">
+                                        <span class="info-label-modern">IBAN</span>
+                                        <span class="info-value-modern" id="account-iban-display">-</span>
+                                    </div>
+                                    <div class="info-item-modern">
+                                        <span class="info-label-modern">Date de création</span>
+                                        <span class="info-value-modern" id="account-created-display">-</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Business Account Settings -->
-                        <div class="settings-section" id="business-settings" style="display: none;">
-                            <h3>Gestion des salaires</h3>
-                            <button class="btn btn-secondary" onclick="syncEmployees()" style="margin-bottom: 20px;">
-                                🔄 Synchroniser les employés
-                            </button>
-
-                            <div class="employees-list" id="employees-list">
-                                <!-- Populated by JS -->
+                        <div id="business-settings" style="display: none;">
+                            <div class="card-modern">
+                                <h3>💼 Gestion des salaires</h3>
+                                <button class="btn-modern btn-secondary-modern" onclick="syncEmployees()" style="margin-bottom: 20px;">
+                                    🔄 Synchroniser les employés
+                                </button>
+                                <div class="employees-list-modern" id="employees-list">
+                                    <!-- Populated by JS -->
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -80,10 +80,10 @@ function OpenBankUI()
                     startingMoney = Config.StartingMoney or 5000
                 })
             else
-                -- Sinon, ouvrir l'interface normale
+                -- Sinon, demander le code PIN
                 SendNUIMessage({
-                    action = 'openBank',
-                    data = data
+                    action = 'showPINVerification',
+                    playerName = data.playerName
                 })
             end
 
@@ -198,6 +198,37 @@ RegisterNUICallback('createAccount', function(data, cb)
     isUIOpen = false
 
     TriggerServerEvent('nc_bank:createPersonalAccount')
+    cb('ok')
+end)
+
+-- Vérifier le code PIN
+RegisterNUICallback('verifyPIN', function(data, cb)
+    local pin = data.pin
+
+    ESX.TriggerServerCallback('nc_bank:verifyPIN', function(isValid, accountData)
+        if isValid then
+            -- PIN correct, ouvrir l'interface bancaire
+            SendNUIMessage({
+                action = 'pinSuccess'
+            })
+
+            -- Attendre un peu puis ouvrir l'interface
+            Wait(300)
+
+            SendNUIMessage({
+                action = 'openBank',
+                data = accountData
+            })
+        else
+            -- PIN incorrect
+            SendNUIMessage({
+                action = 'pinError'
+            })
+
+            ESX.ShowNotification('Code PIN incorrect')
+        end
+    end, pin)
+
     cb('ok')
 end)
 

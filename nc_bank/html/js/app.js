@@ -68,24 +68,25 @@ function getCurrentAccount() {
 function closeBank() {
     $('#bank-container').fadeOut(300);
     $('#account-creation').fadeOut(300);
+    $('#pin-verification').fadeOut(300);
     $.post('https://nc_bank/close', JSON.stringify({}));
 }
 
 // Switch tabs
 function switchTab(tabName) {
     $('.tab-content').removeClass('active');
-    $('.tab-btn').removeClass('active');
+    $('.tab-btn-modern').removeClass('active');
 
     $(`#${tabName}-tab`).addClass('active');
-    $(`.tab-btn[data-tab="${tabName}"]`).addClass('active');
+    $(`.tab-btn-modern[data-tab="${tabName}"]`).addClass('active');
 }
 
 // Switch account (Personal <-> Business)
 function switchAccount(accountType) {
     currentAccount = accountType;
 
-    $('.account-btn').removeClass('active');
-    $(`.account-btn[data-account="${accountType}"]`).addClass('active');
+    $('.account-btn-modern').removeClass('active');
+    $(`.account-btn-modern[data-account="${accountType}"]`).addClass('active');
 
     // Update UI for selected account
     updateHomeTab();
@@ -152,12 +153,12 @@ function displayRecentTransactions(transactions) {
         const amountSign = isPositive ? '+' : '-';
 
         list.append(`
-            <div class="recent-item">
+            <div class="recent-item-modern">
                 <div class="recent-info">
                     <div class="recent-icon">${getTransactionIcon(transaction.transaction_type)}</div>
                     <div class="recent-details">
-                        <h4>${getTransactionTypeName(transaction.transaction_type)}</h4>
-                        <div class="recent-date">${formatDate(transaction.created_at)}</div>
+                        <h4 style="color: white; font-size: 14px; margin-bottom: 3px;">${getTransactionTypeName(transaction.transaction_type)}</h4>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 12px;">${formatDate(transaction.created_at)}</div>
                     </div>
                 </div>
                 <div class="recent-amount ${amountClass}">
@@ -201,17 +202,17 @@ function displayAllTransactions(transactions) {
         const amountSign = isPositive ? '+' : '-';
 
         list.append(`
-            <div class="transaction-item">
+            <div class="transaction-item-modern">
                 <div class="transaction-info">
-                    <div class="transaction-icon">${getTransactionIcon(transaction.transaction_type)}</div>
+                    <div class="transaction-icon" style="font-size: 32px;">${getTransactionIcon(transaction.transaction_type)}</div>
                     <div class="transaction-details">
-                        <h4>${getTransactionTypeName(transaction.transaction_type)}</h4>
-                        <div class="transaction-date">${formatDate(transaction.created_at)}</div>
-                        ${transaction.description ? `<div class="transaction-description">${transaction.description}</div>` : ''}
-                        ${transaction.target_iban ? `<div class="transaction-description">IBAN: ${transaction.target_iban}</div>` : ''}
+                        <h4 style="color: white; font-size: 16px; margin-bottom: 5px;">${getTransactionTypeName(transaction.transaction_type)}</h4>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 12px;">${formatDate(transaction.created_at)}</div>
+                        ${transaction.description ? `<div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 3px;">${transaction.description}</div>` : ''}
+                        ${transaction.target_iban ? `<div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 3px;">IBAN: ${transaction.target_iban}</div>` : ''}
                     </div>
                 </div>
-                <div class="transaction-amount ${amountClass}">
+                <div class="transaction-amount ${amountClass}" style="font-size: 20px; font-weight: 600;">
                     ${amountSign}${formatMoney(transaction.amount)}
                 </div>
             </div>
@@ -529,6 +530,62 @@ function createAccount() {
 }
 
 // ============================================
+// PIN VERIFICATION
+// ============================================
+
+// Show PIN verification page
+function showPINVerification(playerName) {
+    $('#pin-player-name').text(playerName);
+
+    // Reset PIN inputs
+    $('.pin-digit').val('');
+    $('#pin-1').focus();
+
+    $('#pin-verification').fadeIn(300);
+}
+
+// Move focus between PIN digits
+function movePinFocus(currentDigit) {
+    const currentInput = $('#pin-' + currentDigit);
+    const value = currentInput.val();
+
+    // Only allow numbers
+    if (!/^\d$/.test(value)) {
+        currentInput.val('');
+        return;
+    }
+
+    // Move to next digit
+    if (value && currentDigit < 4) {
+        $('#pin-' + (currentDigit + 1)).focus();
+    }
+
+    // Auto-verify when all 4 digits are entered
+    if (currentDigit === 4 && value) {
+        // Small delay for better UX
+        setTimeout(() => {
+            verifyPIN();
+        }, 200);
+    }
+}
+
+// Verify PIN
+function verifyPIN() {
+    const pin = $('#pin-1').val() + $('#pin-2').val() + $('#pin-3').val() + $('#pin-4').val();
+
+    if (pin.length !== 4) {
+        return;
+    }
+
+    // Disable inputs during verification
+    $('.pin-digit').prop('disabled', true);
+
+    $.post('https://nc_bank/verifyPIN', JSON.stringify({ pin: pin }), function(response) {
+        // Response will be handled by NUI message
+    });
+}
+
+// ============================================
 // NUI MESSAGE HANDLER
 // ============================================
 
@@ -540,16 +597,37 @@ window.addEventListener('message', function(event) {
             showAccountCreation(data.playerName, data.startingMoney);
             break;
 
+        case 'showPINVerification':
+            showPINVerification(data.playerName);
+            break;
+
+        case 'pinError':
+            // Re-enable inputs and clear them
+            $('.pin-digit').prop('disabled', false).val('');
+            $('#pin-1').focus();
+
+            // Shake animation
+            $('.pin-card').css('animation', 'shake 0.5s');
+            setTimeout(() => {
+                $('.pin-card').css('animation', '');
+            }, 500);
+            break;
+
+        case 'pinSuccess':
+            // Close PIN verification and open bank
+            $('#pin-verification').fadeOut(300);
+            break;
+
         case 'openBank':
             currentData = data.data;
             currentAccount = 'personal';
             pinVisible = false;
 
-            // Hide account creation page if visible
+            // Hide other pages if visible
             $('#account-creation').hide();
+            $('#pin-verification').hide();
 
             // Update header
-            $('#server-name').text(currentData.serverName);
             $('#player-name').text(currentData.playerName);
 
             // Show/hide business account button
@@ -585,15 +663,26 @@ window.addEventListener('message', function(event) {
 
 $(document).ready(function() {
     // Tab navigation
-    $('.tab-btn').click(function() {
+    $(document).on('click', '.tab-btn-modern', function() {
         const tab = $(this).data('tab');
         switchTab(tab);
     });
 
     // Account selector
-    $('.account-btn').click(function() {
+    $(document).on('click', '.account-btn-modern', function() {
         const account = $(this).data('account');
         switchAccount(account);
+    });
+
+    // PIN input - handle backspace
+    $(document).on('keydown', '.pin-digit', function(e) {
+        if (e.key === 'Backspace' && !$(this).val()) {
+            const id = $(this).attr('id');
+            const currentDigit = parseInt(id.split('-')[1]);
+            if (currentDigit > 1) {
+                $('#pin-' + (currentDigit - 1)).focus().select();
+            }
+        }
     });
 
     // ESC key to close
