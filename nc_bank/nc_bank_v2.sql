@@ -127,11 +127,13 @@ GROUP BY a.id, a.identifier, a.iban, a.account_type;
 
 DELIMITER //
 
-CREATE FUNCTION IF NOT EXISTS `generate_iban`()
-RETURNS VARCHAR(34)
+DROP FUNCTION IF EXISTS `generate_iban`//
+
+CREATE FUNCTION `generate_iban`()
+RETURNS VARCHAR(34) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 DETERMINISTIC
 BEGIN
-    DECLARE new_iban VARCHAR(34);
+    DECLARE new_iban VARCHAR(34) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     DECLARE iban_exists INT;
 
     REPEAT
@@ -147,7 +149,7 @@ BEGIN
 
         SELECT COUNT(*) INTO iban_exists
         FROM nc_bank_accounts
-        WHERE iban = new_iban;
+        WHERE iban = new_iban COLLATE utf8mb4_unicode_ci;
 
     UNTIL iban_exists = 0 END REPEAT;
 
