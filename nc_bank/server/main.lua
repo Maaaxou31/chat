@@ -881,4 +881,161 @@ if Config.EnableInterests then
     end)
 end
 
+-- ============================================
+-- APP TÉLÉPHONE - CALLBACKS ET EVENTS
+-- ============================================
+
+-- Callback: Récupérer les infos du compte pour l'app téléphone
+ESX.RegisterServerCallback('nc_bank:getPhoneAccountInfo', function(source, cb)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return cb(nil) end
+
+    local accounts = GetPlayerAccounts(xPlayer.identifier)
+    local personalAccount = nil
+
+    -- Récupérer le compte personnel
+    for _, account in pairs(accounts) do
+        if account.account_type == 'personal' then
+            personalAccount = account
+            break
+        end
+    end
+
+    if not personalAccount then
+        return cb(nil)
+    end
+
+    -- Récupérer les transactions récentes
+    local recentTransactions = MySQL.query.await('SELECT * FROM nc_bank_transactions WHERE account_id = ? ORDER BY created_at DESC LIMIT ?', {
+        personalAccount.id,
+        5 -- Seulement 5 transactions pour le téléphone
+    })
+
+    local data = {
+        balance = personalAccount.balance,
+        iban = personalAccount.iban,
+        accountId = personalAccount.id,
+        recentTransactions = recentTransactions or {}
+    }
+
+    cb(data)
+end)
+
+-- Event: Virement par numéro de téléphone
+RegisterNetEvent('nc_bank:phoneTransfer', function(phoneNumber, amount)
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+
+    if not xPlayer then return end
+
+    -- Vérifier le montant
+    if not amount or amount <= 0 then
+        TriggerClientEvent('esx:showNotification', source, 'Montant invalide')
+        return
+    end
+
+    -- Récupérer le compte personnel de l'expéditeur
+    local accounts = GetPlayerAccounts(xPlayer.identifier)
+    local senderAccount = nil
+
+    for _, account in pairs(accounts) do
+        if account.account_type == 'personal' then
+            senderAccount = account
+            break
+        end
+    end
+
+    if not senderAccount then
+        TriggerClientEvent('esx:showNotification', source, 'Vous n\'avez pas de compte bancaire')
+        return
+    end
+
+    -- Vérifier le solde
+    if senderAccount.balance < amount then
+        TriggerClientEvent('esx:showNotification', source, 'Solde insuffisant')
+        return
+    end
+
+    -- Trouver le joueur cible par son numéro de téléphone
+    -- Note: Vous devez adapter cette partie selon votre système de téléphone (yseries, gcphone, etc.)
+    local targetPlayer = nil
+    local targetIdentifier = nil
+
+    -- Essayer de trouver le joueur via ESX (chercher dans les metadata ou une table de téléphones)
+    -- Pour yseries, chercher dans la table phone_contacts ou similaire
+    local result = MySQL.query.await('SELECT identifier FROM users WHERE phone_number = ? LIMIT 1', {phoneNumber})
+
+    if result and result[1] then
+        targetIdentifier = result[1].identifier
+
+        -- Trouver le joueur en ligne
+        for _, playerId in ipairs(GetPlayers()) do
+            local target = ESX.GetPlayerFromId(playerId)
+            if target and target.identifier == targetIdentifier then
+                targetPlayer = target
+                break
+            end
+        end
+    else
+        TriggerClientEvent('esx:showNotification', source, 'Numéro de téléphone introuvable')
+        return
+    end
+
+    -- Récupérer le compte du destinataire
+    local targetAccounts = GetPlayerAccounts(targetIdentifier)
+    local targetAccount = nil
+
+    for _, account in pairs(targetAccounts) do
+        if account.account_type == 'personal' then
+            targetAccount = account
+            break
+        end
+    end
+
+    if not targetAccount then
+        TriggerClientEvent('esx:showNotification', source, 'Le destinataire n\'a pas de compte bancaire')
+        return
+    end
+
+    -- Calculer les frais
+    local feePercent = Config.TransferFee or 1
+    local fee = math.max(5, math.min(250, math.floor(amount * (feePercent / 100))))
+    local totalAmount = amount + fee
+
+    -- Vérifier le solde avec frais
+    if senderAccount.balance < totalAmount then
+        TriggerClientEvent('esx:showNotification', source, 'Solde insuffisant (frais inclus: $' .. fee .. ')')
+        return
+    end
+
+    -- Effectuer le virement
+    local newSenderBalance = senderAccount.balance - totalAmount
+    local newTargetBalance = targetAccount.balance + amount
+
+    -- Mettre à jour les soldes
+    MySQL.update('UPDATE nc_bank_accounts SET balance = ? WHERE id = ?', {newSenderBalance, senderAccount.id})
+    MySQL.update('UPDATE nc_bank_accounts SET balance = ? WHERE id = ?', {newTargetBalance, targetAccount.id})
+
+    -- Ajouter les transactions
+    AddTransaction(senderAccount.id, 'transfer_sent', amount, senderAccount.balance, newSenderBalance, targetAccount.iban, 'Virement vers ' .. phoneNumber)
+    AddTransaction(targetAccount.id, 'transfer_received', amount, targetAccount.balance, newTargetBalance, senderAccount.iban, 'Virement de ' .. xPlayer.getName())
+
+    -- Notifications
+    TriggerClientEvent('esx:showNotification', source, 'Virement effectué: ' .. ESX.Math.GroupDigits(amount) .. '$ (frais: ' .. fee .. '$)')
+
+    if targetPlayer then
+        TriggerClientEvent('esx:showNotification', targetPlayer.source, 'Virement reçu: ' .. ESX.Math.GroupDigits(amount) .. '$ de ' .. xPlayer.getName())
+        TriggerClientEvent('nc_bank:refreshUI', targetPlayer.source)
+    end
+
+    -- Rafraîchir l'UI de l'expéditeur
+    TriggerClientEvent('nc_bank:refreshUI', source)
+
+    -- Log
+    if Config.Debug then
+        print(string.format('[NC_BANK] Virement téléphone: %s -> %s | Montant: %s$ | Frais: %s$',
+            xPlayer.identifier, targetIdentifier, amount, fee))
+    end
+end)
+
 print('^2[NC_BANK]^7 NorthCounty Bank System V2 chargé avec succès!')

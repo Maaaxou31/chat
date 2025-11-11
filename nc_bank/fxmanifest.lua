@@ -29,7 +29,13 @@ files {
     'html/css/*.css',
     'html/js/*.js',
     'html/img/*.png',
-    'html/img/*.jpg'
+    'html/img/*.jpg',
+
+    -- Fichiers pour l'app téléphone yseries
+    'phone/index.html',
+    'phone/style.css',
+    'phone/app.js',
+    'phone/bank_app.lua'
 }
 
 dependencies {

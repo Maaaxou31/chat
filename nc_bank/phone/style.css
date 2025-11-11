@@ -1,0 +1,229 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f5f5;
+    overflow-x: hidden;
+}
+
+#phone-bank-app {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    background: #f5f5f5;
+    padding-bottom: 20px;
+}
+
+/* Header */
+.phone-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.bank-icon {
+    font-size: 24px;
+}
+
+.balance-mini {
+    font-size: 16px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Balance Card */
+.balance-card {
+    background: white;
+    margin: 16px;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.balance-label {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.balance-amount {
+    color: #667eea;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.account-number {
+    color: #999;
+    font-size: 12px;
+}
+
+.account-number span {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Transfer Section */
+.transfer-section {
+    background: white;
+    margin: 16px;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.transfer-section h3 {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.transfer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-group-phone {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group-phone label {
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.form-group-phone input {
+    padding: 14px;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s;
+}
+
+.form-group-phone input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-phone-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 8px;
+}
+
+.btn-phone-primary:active {
+    transform: scale(0.98);
+}
+
+/* Recent Transactions */
+.recent-section {
+    background: white;
+    margin: 16px;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.recent-section h3 {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.phone-transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.no-transactions {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-size: 14px;
+}
+
+.phone-transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.transaction-info-phone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.transaction-icon-phone {
+    font-size: 24px;
+}
+
+.transaction-details-phone {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.transaction-type-phone {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.transaction-date-phone {
+    color: #999;
+    font-size: 12px;
+}
+
+.transaction-amount-phone {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.transaction-amount-phone.positive {
+    color: #10b981;
+}
+
+.transaction-amount-phone.negative {
+    color: #ef4444;
+}

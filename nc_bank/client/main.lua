@@ -273,3 +273,23 @@ end
 -- Exports pour d'autres ressources
 exports('OpenBank', OpenBankUI)
 exports('IsUIOpen', function() return isUIOpen end)
+
+-- ============================================
+-- CALLBACKS POUR L'APP TÉLÉPHONE
+-- ============================================
+
+-- Virement par numéro de téléphone (depuis l'app téléphone)
+RegisterNUICallback('phoneTransfer', function(data, cb)
+    local phoneNumber = data.phoneNumber
+    local amount = data.amount
+
+    TriggerServerEvent('nc_bank:phoneTransfer', phoneNumber, amount)
+    cb({ success = true })
+end)
+
+-- Rafraîchir les données du compte (pour l'app téléphone)
+RegisterNUICallback('refreshPhoneBank', function(data, cb)
+    ESX.TriggerServerCallback('nc_bank:getPhoneAccountInfo', function(accountData)
+        cb(accountData)
+    end)
+end)

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NC Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="phone-bank-app">
+        <!-- Header -->
+        <div class="phone-header">
+            <div class="header-title">
+                <span class="bank-icon">🏦</span>
+                <span>NC Bank</span>
+            </div>
+            <div class="balance-mini" id="phone-balance">$0</div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-label">Solde disponible</div>
+            <div class="balance-amount" id="phone-balance-main">$0</div>
+            <div class="account-number">IBAN: <span id="phone-iban">-</span></div>
+        </div>
+
+        <!-- Transfer Section -->
+        <div class="transfer-section">
+            <h3>💸 Virement rapide</h3>
+            <div class="transfer-form">
+                <div class="form-group-phone">
+                    <label>Numéro de téléphone</label>
+                    <input type="tel" id="phone-transfer-number" placeholder="555-1234" maxlength="20">
+                </div>
+                <div class="form-group-phone">
+                    <label>Montant</label>
+                    <input type="number" id="phone-transfer-amount" placeholder="0" min="0">
+                </div>
+                <button class="btn-phone-primary" onclick="sendPhoneTransfer()">
+                    Envoyer →
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="recent-section">
+            <h3>📊 Transactions récentes</h3>
+            <div class="phone-transactions-list" id="phone-transactions">
+                <div class="no-transactions">Aucune transaction</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
