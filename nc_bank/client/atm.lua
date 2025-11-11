@@ -12,29 +12,33 @@ CreateThread(function()
         local closestDistance = 2.0
 
         -- Détecter les ATM du jeu
-        for _, model in pairs(Config.ATMModels) do
-            local atm = GetClosestObjectOfType(playerCoords.x, playerCoords.y, playerCoords.z, 2.0, model, false, false, false)
+        if Config.ATMModels then
+            for _, model in pairs(Config.ATMModels) do
+                local atm = GetClosestObjectOfType(playerCoords.x, playerCoords.y, playerCoords.z, 2.0, model, false, false, false)
 
-            if DoesEntityExist(atm) then
-                local atmCoords = GetEntityCoords(atm)
-                local distance = #(playerCoords - atmCoords)
+                if DoesEntityExist(atm) then
+                    local atmCoords = GetEntityCoords(atm)
+                    local distance = #(playerCoords - atmCoords)
+
+                    if distance < closestDistance then
+                        closestDistance = distance
+                        nearestATM = atm
+                        wait = 0
+                    end
+                end
+            end
+        end
+
+        -- Vérifier les ATM personnalisés (si configurés)
+        if Config.CustomATMs then
+            for _, atm in pairs(Config.CustomATMs) do
+                local distance = #(playerCoords - atm.coords)
 
                 if distance < closestDistance then
                     closestDistance = distance
                     nearestATM = atm
                     wait = 0
                 end
-            end
-        end
-
-        -- Vérifier les ATM personnalisés
-        for _, atm in pairs(Config.CustomATMs) do
-            local distance = #(playerCoords - atm.coords)
-
-            if distance < closestDistance then
-                closestDistance = distance
-                nearestATM = atm
-                wait = 0
             end
         end
 

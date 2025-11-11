@@ -57,6 +57,12 @@ Config.ATMModels = {
     `prop_fleeca_atm`
 }
 
+-- ATM personnalisés (optionnel - ajoutez vos propres coordonnées)
+Config.CustomATMs = {
+    -- Exemple:
+    -- { coords = vector3(0.0, 0.0, 0.0) },
+}
+
 -- ============================================
 -- CONFIGURATION DES BANQUES
 -- ============================================
