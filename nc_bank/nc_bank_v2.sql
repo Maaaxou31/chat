@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS `nc_bank_accounts` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `last_activity` TIMESTAMP NULL DEFAULT NULL,
     PRIMARY KEY (`id`),
-    KEY `identifier` (`identifier`),
-    KEY `iban` (`iban`)
+    KEY `identifier` (`identifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table des comptes entreprise
