@@ -145,49 +145,33 @@
 
     <!-- Page de vérification PIN -->
     <div id="pin-verification" style="display: none;">
-        <div class="creation-wrapper-v2">
-            <!-- Top Bar -->
-            <div class="creation-topbar">
-                <div class="topbar-left">
-                    <div class="bank-logo-creation">
-                        <div class="logo-circle">🏦</div>
-                        <div class="logo-text">
-                            <span class="bank-name">NorthCounty Bank</span>
-                            <span class="bank-tagline">Votre confiance, notre priorité</span>
-                        </div>
-                    </div>
+        <div class="pin-verification-wrapper">
+            <div class="pin-card">
+                <div class="pin-icon">🔐</div>
+                <h2 class="pin-title">Accès Sécurisé</h2>
+                <p class="pin-subtitle">Veuillez entrer votre code PIN à 4 chiffres</p>
+
+                <div class="pin-player-info">
+                    <span id="pin-player-name">Chargement...</span>
                 </div>
-                <div class="topbar-right">
-                    <div class="player-name-header" id="pin-player-name">Chargement...</div>
+
+                <div class="pin-input-group">
+                    <input type="password" maxlength="1" class="pin-digit" id="pin-1" oninput="movePinFocus(1)">
+                    <input type="password" maxlength="1" class="pin-digit" id="pin-2" oninput="movePinFocus(2)">
+                    <input type="password" maxlength="1" class="pin-digit" id="pin-3" oninput="movePinFocus(3)">
+                    <input type="password" maxlength="1" class="pin-digit" id="pin-4" oninput="movePinFocus(4)">
                 </div>
-                <button class="close-btn-creation" onclick="closeBank()">✕</button>
-            </div>
 
-            <!-- Main Content -->
-            <div class="creation-main">
-                <div class="pin-verification-content">
-                    <div class="pin-card">
-                        <div class="pin-icon">🔐</div>
-                        <h2 class="pin-title">Accès Sécurisé</h2>
-                        <p class="pin-subtitle">Veuillez entrer votre code PIN à 4 chiffres</p>
+                <button class="btn-create-modern" onclick="verifyPIN()">
+                    <span class="btn-text">Déverrouiller</span>
+                    <span class="btn-icon">🔓</span>
+                </button>
 
-                        <div class="pin-input-group">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin-1" oninput="movePinFocus(1)">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin-2" oninput="movePinFocus(2)">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin-3" oninput="movePinFocus(3)">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin-4" oninput="movePinFocus(4)">
-                        </div>
-
-                        <button class="btn-create-modern" onclick="verifyPIN()">
-                            <span class="btn-text">Déverrouiller</span>
-                            <span class="btn-icon">🔓</span>
-                        </button>
-
-                        <div class="pin-security-note">
-                            🛡️ Votre code PIN protège l'accès à votre compte
-                        </div>
-                    </div>
+                <div class="pin-security-note">
+                    🛡️ Votre code PIN protège l'accès à votre compte
                 </div>
+
+                <button class="pin-close-btn" onclick="closeBank()">✕</button>
             </div>
         </div>
     </div>

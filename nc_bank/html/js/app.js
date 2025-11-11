@@ -174,9 +174,14 @@ function loadTransactions() {
     const account = getCurrentAccount();
     if (!account) return;
 
-    ESX.TriggerServerCallback('nc_bank:getTransactions', function(transactions) {
-        displayAllTransactions(transactions);
-    }, account.id);
+    // Demander les transactions via NUI callback
+    $.post('https://nc_bank/getTransactions', JSON.stringify({
+        accountId: account.id
+    }), function(transactions) {
+        if (transactions) {
+            displayAllTransactions(transactions);
+        }
+    });
 }
 
 // Display all transactions
@@ -310,9 +315,14 @@ function loadEmployees() {
     const account = getCurrentAccount();
     if (!account || account.account_type !== 'business') return;
 
-    ESX.TriggerServerCallback('nc_bank:getBusinessEmployees', function(employees) {
-        displayEmployees(employees);
-    }, account.id);
+    // Demander les employés via NUI callback
+    $.post('https://nc_bank/getBusinessEmployees', JSON.stringify({
+        accountId: account.id
+    }), function(employees) {
+        if (employees) {
+            displayEmployees(employees);
+        }
+    });
 }
 
 // Display employees
@@ -433,9 +443,14 @@ function searchTransactions() {
         endDate: $('#filter-end-date').val() || null
     };
 
-    ESX.TriggerServerCallback('nc_bank:searchTransactions', function(transactions) {
-        displayAllTransactions(transactions);
-    }, account.id, filters);
+    $.post('https://nc_bank/searchTransactions', JSON.stringify({
+        accountId: account.id,
+        filters: filters
+    }), function(transactions) {
+        if (transactions) {
+            displayAllTransactions(transactions);
+        }
+    });
 }
 
 // Reset filters
@@ -538,8 +553,16 @@ function showPINVerification(playerName) {
     $('#pin-player-name').text(playerName);
 
     // Reset PIN inputs
-    $('.pin-digit').val('');
-    $('#pin-1').focus();
+    $('.pin-digit').val('').prop('disabled', false);
+
+    // Reset button
+    $('.btn-create-modern').prop('disabled', false);
+    $('.btn-text').text('Déverrouiller');
+
+    // Focus first input
+    setTimeout(() => {
+        $('#pin-1').focus();
+    }, 300);
 
     $('#pin-verification').fadeIn(300);
 }

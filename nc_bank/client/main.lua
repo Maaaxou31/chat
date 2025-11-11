@@ -232,6 +232,34 @@ RegisterNUICallback('verifyPIN', function(data, cb)
     cb('ok')
 end)
 
+-- Récupérer les transactions d'un compte
+RegisterNUICallback('getTransactions', function(data, cb)
+    local accountId = data.accountId
+
+    ESX.TriggerServerCallback('nc_bank:getTransactions', function(transactions)
+        cb(transactions)
+    end, accountId)
+end)
+
+-- Rechercher des transactions avec filtres
+RegisterNUICallback('searchTransactions', function(data, cb)
+    local accountId = data.accountId
+    local filters = data.filters
+
+    ESX.TriggerServerCallback('nc_bank:searchTransactions', function(transactions)
+        cb(transactions)
+    end, accountId, filters)
+end)
+
+-- Récupérer les employés d'un compte entreprise
+RegisterNUICallback('getBusinessEmployees', function(data, cb)
+    local accountId = data.accountId
+
+    ESX.TriggerServerCallback('nc_bank:getBusinessEmployees', function(employees)
+        cb(employees)
+    end, accountId)
+end)
+
 -- Animation de dépôt/retrait
 function PlayBankAnimation()
     local playerPed = PlayerPedId()
