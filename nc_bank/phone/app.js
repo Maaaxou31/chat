@@ -129,6 +129,11 @@ function refreshPhoneData() {
     });
 }
 
+// Close phone bank
+function closePhoneBank() {
+    $.post('https://' + GetParentResourceName() + '/closePhoneBank', JSON.stringify({}));
+}
+
 // NUI Message Handler
 window.addEventListener('message', function(event) {
     const data = event.data;

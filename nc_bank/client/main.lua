@@ -293,3 +293,38 @@ RegisterNUICallback('refreshPhoneBank', function(data, cb)
         cb(accountData)
     end)
 end)
+
+-- Event pour ouvrir l'app téléphone depuis un autre script (yseries)
+RegisterNetEvent('nc_bank:openPhoneApp', function()
+    ESX.TriggerServerCallback('nc_bank:getPhoneAccountInfo', function(data)
+        if data then
+            SendNUIMessage({
+                action = 'openPhoneBank',
+                data = data
+            })
+        end
+    end)
+end)
+
+-- Commande /banque pour ouvrir l'app bancaire du téléphone
+RegisterCommand('banque', function()
+    ESX.TriggerServerCallback('nc_bank:getPhoneAccountInfo', function(data)
+        if data then
+            SetNuiFocus(true, true)
+            SendNUIMessage({
+                action = 'openPhoneBank',
+                data = data
+            })
+            isUIOpen = true
+        else
+            ESX.ShowNotification('~r~Vous n\'avez pas de compte bancaire')
+        end
+    end)
+end, false)
+
+-- Callback pour fermer l'app téléphone
+RegisterNUICallback('closePhoneBank', function(data, cb)
+    SetNuiFocus(false, false)
+    isUIOpen = false
+    cb('ok')
+end)
