@@ -14,7 +14,8 @@ shared_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
-    'server/main.lua'
+    'server/main.lua',
+    'server/yseries_bridge.lua'
 }
 
 client_scripts {
@@ -35,7 +36,8 @@ files {
     'phone/index.html',
     'phone/style.css',
     'phone/app.js',
-    'phone/bank_app.lua'
+    'phone/bank_app.lua',
+    'phone/banking.lua'
 }
 
 dependencies {
