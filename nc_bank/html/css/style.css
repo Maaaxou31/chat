@@ -24,9 +24,9 @@ body {
     width: 90%;
     max-width: 1400px;
     height: 90vh;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -513,14 +513,22 @@ body {
 }
 
 .logo-icon {
-    font-size: 36px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .bank-logo h1 {
     color: white;
-    font-size: 28px;
-    font-weight: 600;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .header-info {
@@ -538,18 +546,18 @@ body {
 .close-btn {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 10px;
     border: none;
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .close-btn:hover {
-    background: rgba(255, 0, 0, 0.7);
-    transform: rotate(90deg);
+    background: rgba(239, 68, 68, 0.8);
+    transform: scale(1.1);
 }
 
 /* ============================================
@@ -584,9 +592,10 @@ body {
 }
 
 .account-btn.active {
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: #667eea;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
 }
 
 /* ============================================
@@ -624,8 +633,8 @@ body {
 
 .tab-btn.active {
     color: white;
-    border-bottom-color: #4ade80;
-    background: rgba(255, 255, 255, 0.1);
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.15);
 }
 
 .tab-icon {
@@ -676,10 +685,21 @@ body {
 .actions-card,
 .transfer-card,
 .recent-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 25px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 30px;
+    border-radius: 20px;
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
+}
+
+.overview-card:hover,
+.actions-card:hover,
+.transfer-card:hover,
+.recent-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .overview-card h3,
@@ -687,9 +707,12 @@ body {
 .transfer-card h3,
 .recent-card h3 {
     color: white;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-size: 20px;
+    margin-bottom: 25px;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .balance-display,
@@ -774,17 +797,25 @@ body {
 
 .action-item input {
     width: 100%;
-    padding: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
+    padding: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     color: white;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.action-item input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .action-item input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .action-buttons {
@@ -806,17 +837,25 @@ body {
 
 .transfer-form input {
     width: 100%;
-    padding: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
+    padding: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     color: white;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.transfer-form input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .transfer-form input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .transfer-info {
@@ -842,9 +881,17 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 18px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.recent-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 .recent-info {
@@ -897,14 +944,14 @@ body {
 }
 
 .btn-primary {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover {
-    background: #2563eb;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
 }
 
 .btn-success {
@@ -1044,13 +1091,14 @@ body {
 }
 
 .search-filters {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 25px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 30px;
+    border-radius: 20px;
     margin-bottom: 25px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .filter-group {
@@ -1066,16 +1114,24 @@ body {
 
 .filter-group input {
     padding: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     color: white;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
     font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.filter-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .filter-group input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .filter-buttons {
@@ -1085,11 +1141,12 @@ body {
 }
 
 .all-transactions {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 25px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 30px;
+    border-radius: 20px;
     max-height: 500px;
     overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .transaction-item {
@@ -1098,8 +1155,16 @@ body {
     align-items: center;
     padding: 20px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    margin-bottom: 10px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.transaction-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 .transaction-info {
@@ -1153,10 +1218,11 @@ body {
 }
 
 .settings-section {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 25px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 30px;
+    border-radius: 20px;
     margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .settings-section h3 {
@@ -1179,17 +1245,25 @@ body {
 .pin-change-form input {
     width: 100%;
     max-width: 300px;
-    padding: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
+    padding: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     color: white;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.pin-change-form input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .pin-change-form input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .account-info-display {
@@ -1229,10 +1303,17 @@ body {
 .employee-item {
     background: rgba(255, 255, 255, 0.05);
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.employee-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 .employee-info h4 {
