@@ -6,30 +6,60 @@ Config.Locale = 'fr'
 -- Nom du serveur (affiché dans l'interface)
 Config.ServerName = "NorthCounty RP"
 
--- Configuration des comptes
-Config.StartingMoney = 5000 -- Argent de départ sur le compte bancaire
-Config.MaxSavingsAccounts = 3 -- Nombre maximum de comptes d'épargne par joueur
+-- ============================================
+-- CONFIGURATION DES COMPTES
+-- ============================================
 
--- Configuration des intérêts
-Config.EnableInterests = true
-Config.InterestRate = 0.05 -- 5% d'intérêt par cycle
-Config.InterestCycle = 60 -- En minutes (60 = 1 heure)
-Config.SavingsInterestRate = 0.10 -- 10% pour les comptes d'épargne
+-- Argent de départ sur le compte personnel
+Config.StartingMoney = 5000
+
+-- Format IBAN (NC = NorthCounty)
+Config.IBANPrefix = "NC"
+Config.IBANLength = 26
+
+-- Code PIN par défaut (changeable par le joueur)
+Config.DefaultPIN = "1234"
+
+-- Types de comptes
+Config.AccountTypes = {
+    personal = "Compte Personnel",
+    business = "Compte Entreprise"
+}
+
+-- ============================================
+-- CONFIGURATION DES TRANSACTIONS
+-- ============================================
 
 -- Limites de transaction
-Config.MaxTransferAmount = 50000 -- Montant maximum par virement
-Config.MaxWithdrawal = 20000 -- Retrait maximum par transaction
-Config.MaxDeposit = 50000 -- Dépôt maximum par transaction
+Config.MaxTransferAmount = 100000
+Config.MaxWithdrawal = 50000
+Config.MaxDeposit = 100000
 
 -- Frais bancaires
-Config.TransferFee = 0.02 -- 2% de frais sur les virements
-Config.MinTransferFee = 10 -- Frais minimum
-Config.MaxTransferFee = 500 -- Frais maximum
+Config.TransferFee = 0.01 -- 1% de frais sur les virements
+Config.MinTransferFee = 5
+Config.MaxTransferFee = 250
 
--- Configuration ATM
+-- ============================================
+-- CONFIGURATION ATM
+-- ============================================
+
 Config.EnableATM = true
-Config.ATMWithdrawLimit = 5000 -- Limite de retrait aux ATM
-Config.ATMDepositLimit = 10000 -- Limite de dépôt aux ATM
+Config.ATMWithdrawLimit = 5000
+Config.ATMDepositLimit = 10000
+Config.ATMOnlyPersonal = true -- ATM uniquement pour comptes personnels
+
+-- Modèles d'ATM dans le jeu
+Config.ATMModels = {
+    `prop_atm_01`,
+    `prop_atm_02`,
+    `prop_atm_03`,
+    `prop_fleeca_atm`
+}
+
+-- ============================================
+-- CONFIGURATION DES BANQUES
+-- ============================================
 
 -- Positions des banques (Markers)
 Config.Banks = {
@@ -65,30 +95,64 @@ Config.Banks = {
     }
 }
 
--- Positions des ATM automatiques (les ATM du jeu sont détectés automatiquement)
-Config.CustomATMs = {
-    -- Vous pouvez ajouter des ATM personnalisés ici
-    -- {coords = vector3(x, y, z)}
-}
-
 -- Blips sur la carte
-Config.BlipSprite = 108 -- Icône de banque
-Config.BlipColor = 2 -- Couleur verte
+Config.BlipSprite = 108
+Config.BlipColor = 2
 Config.BlipScale = 0.8
 
 -- Marker
 Config.MarkerType = 1
 Config.MarkerSize = {x = 1.5, y = 1.5, z = 1.0}
 Config.MarkerColor = {r = 0, g = 255, b = 0}
-Config.MarkerDistance = 15.0 -- Distance d'affichage du marker
+Config.MarkerDistance = 15.0
 
--- Historique des transactions
-Config.MaxTransactionHistory = 50 -- Nombre maximum de transactions gardées en historique
+-- ============================================
+-- CONFIGURATION DES SALAIRES (ENTREPRISE)
+-- ============================================
 
--- Notifications
-Config.UseESXNotifications = true -- Utiliser les notifications ESX
+-- Intervalle minimum entre deux paiements de salaire (en heures)
+Config.MinSalaryInterval = 24
 
--- Animation
+-- Paiement automatique des salaires
+Config.AutoPaySalaries = false
+
+-- Jour de paiement automatique (1 = Lundi, 7 = Dimanche)
+Config.SalaryPayDay = 1 -- Lundi
+
+-- ============================================
+-- CONFIGURATION DES CARTES BANCAIRES
+-- ============================================
+
+-- Durée de validité des cartes (en mois)
+Config.CardValidityMonths = 48
+
+-- Types de cartes
+Config.CardTypes = {
+    debit = "Carte de Débit",
+    credit = "Carte de Crédit"
+}
+
+-- ============================================
+-- CONFIGURATION DES INTÉRÊTS
+-- ============================================
+
+Config.EnableInterests = true
+Config.InterestRate = 0.02 -- 2% d'intérêt par cycle
+Config.InterestCycle = 168 -- En heures (168h = 1 semaine)
+Config.SavingsInterestRate = 0.05 -- 5% pour les comptes d'épargne
+
+-- ============================================
+-- CONFIGURATION DE L'HISTORIQUE
+-- ============================================
+
+-- Nombre de transactions à afficher
+Config.MaxTransactionHistory = 100
+Config.RecentTransactionsCount = 5
+
+-- ============================================
+-- ANIMATIONS
+-- ============================================
+
 Config.DepositAnimation = {
     dict = "mp_common",
     anim = "givetake1_a"
@@ -99,17 +163,38 @@ Config.WithdrawAnimation = {
     anim = "givetake2_a"
 }
 
--- Intégration téléphone (mettre le nom de votre ressource de téléphone)
-Config.PhoneResource = "gcphone" -- Peut être "gcphone", "d-phone", "lb-phone", "qs-phone", etc.
-Config.EnablePhoneApp = true
+-- ============================================
+-- NOTIFICATIONS
+-- ============================================
 
--- Modèles d'ATM dans le jeu
-Config.ATMModels = {
-    `prop_atm_01`,
-    `prop_atm_02`,
-    `prop_atm_03`,
-    `prop_fleeca_atm`
+Config.UseESXNotifications = true
+
+-- ============================================
+-- INTÉGRATION TÉLÉPHONE
+-- ============================================
+
+Config.PhoneResource = "gcphone"
+Config.EnablePhoneApp = false -- Désactivé pour l'instant
+
+-- ============================================
+-- JOBS AVEC COMPTES ENTREPRISE
+-- ============================================
+
+-- Jobs qui peuvent avoir un compte entreprise
+Config.BusinessJobs = {
+    'police',
+    'ambulance',
+    'mechanic',
+    'taxi',
+    'cardealer',
+    'realestate',
+    'lawyer',
+    'gang',
+    'mafia'
 }
 
--- Debug
+-- ============================================
+-- DEBUG
+-- ============================================
+
 Config.Debug = false

@@ -18,57 +18,314 @@ local Locale = setmetatable({}, {
     end
 })
 
+-- ============================================
+-- FONCTIONS UTILITAIRES
+-- ============================================
+
+-- Générer un IBAN unique
+local function GenerateIBAN()
+    return MySQL.scalar.await('SELECT generate_iban()', {})
+end
+
+-- Vérifier si un IBAN existe
+local function IBANExists(iban)
+    local result = MySQL.scalar.await('SELECT COUNT(*) FROM nc_bank_accounts WHERE iban = ?', {iban})
+    return result > 0
+end
+
+-- Récupérer un compte par IBAN
+local function GetAccountByIBAN(iban)
+    return MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE iban = ? LIMIT 1', {iban})
+end
+
+-- Récupérer les comptes d'un joueur
+local function GetPlayerAccounts(identifier)
+    return MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE identifier = ?', {identifier})
+end
+
 -- Fonction pour ajouter une transaction à l'historique
-local function AddTransaction(identifier, transactionType, amount, balanceBefore, balanceAfter, receiver, sender, description)
-    MySQL.insert('INSERT INTO nc_bank_transactions (identifier, transaction_type, amount, balance_before, balance_after, receiver, sender, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
-        identifier,
+local function AddTransaction(accountId, transactionType, amount, balanceBefore, balanceAfter, targetIban, description)
+    MySQL.insert('INSERT INTO nc_bank_transactions (account_id, transaction_type, amount, balance_before, balance_after, target_iban, description) VALUES (?, ?, ?, ?, ?, ?, ?)', {
+        accountId,
         transactionType,
         amount,
         balanceBefore,
         balanceAfter,
-        receiver,
-        sender,
+        targetIban,
         description
     })
 
     -- Limiter l'historique
-    MySQL.query('DELETE FROM nc_bank_transactions WHERE identifier = ? AND id NOT IN (SELECT id FROM (SELECT id FROM nc_bank_transactions WHERE identifier = ? ORDER BY created_at DESC LIMIT ?) AS temp)', {
-        identifier,
-        identifier,
+    MySQL.query('DELETE FROM nc_bank_transactions WHERE account_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM nc_bank_transactions WHERE account_id = ? ORDER BY created_at DESC LIMIT ?) AS temp)', {
+        accountId,
+        accountId,
         Config.MaxTransactionHistory
     })
 end
 
--- Récupérer les informations du compte
-ESX.RegisterServerCallback('nc_bank:getAccountInfo', function(source, cb)
+-- ============================================
+-- GESTION DES COMPTES
+-- ============================================
+
+-- Créer le compte personnel d'un joueur
+local function CreatePersonalAccount(identifier, playerName)
+    local iban = GenerateIBAN()
+    local pin = Config.DefaultPIN
+
+    local accountId = MySQL.insert.await('INSERT INTO nc_bank_accounts (identifier, iban, pin_code, account_type, account_name, balance) VALUES (?, ?, ?, ?, ?, ?)', {
+        identifier,
+        iban,
+        pin,
+        'personal',
+        playerName,
+        Config.StartingMoney
+    })
+
+    -- Créer une carte bancaire pour ce compte
+    local expiryDate = os.date('%Y-%m-%d', os.time() + (Config.CardValidityMonths * 30 * 24 * 60 * 60))
+    MySQL.insert('INSERT INTO nc_bank_cards (account_id, card_number, card_type, expiry_date) VALUES (?, ?, ?, ?)', {
+        accountId,
+        iban, -- On utilise l'IBAN comme numéro de carte
+        'debit',
+        expiryDate
+    })
+
+    return accountId, iban
+end
+
+-- Créer un compte entreprise pour un joueur
+local function CreateBusinessAccount(identifier, playerName, jobName, jobLabel)
+    local iban = GenerateIBAN()
+    local pin = Config.DefaultPIN
+
+    local accountId = MySQL.insert.await('INSERT INTO nc_bank_accounts (identifier, iban, pin_code, account_type, account_name, balance) VALUES (?, ?, ?, ?, ?, ?)', {
+        identifier,
+        iban,
+        pin,
+        'business',
+        'Entreprise - ' .. jobLabel,
+        0
+    })
+
+    -- Créer les détails du compte entreprise
+    MySQL.insert('INSERT INTO nc_business_accounts (account_id, business_name, job_name) VALUES (?, ?, ?)', {
+        accountId,
+        jobLabel,
+        jobName
+    })
+
+    -- Créer une carte bancaire pour ce compte
+    local expiryDate = os.date('%Y-%m-%d', os.time() + (Config.CardValidityMonths * 30 * 24 * 60 * 60))
+    MySQL.insert('INSERT INTO nc_bank_cards (account_id, card_number, card_type, expiry_date) VALUES (?, ?, ?, ?)', {
+        accountId,
+        iban,
+        'debit',
+        expiryDate
+    })
+
+    return accountId, iban
+end
+
+-- Event: Joueur connecté (vérifier et créer les comptes si nécessaire)
+AddEventHandler('esx:playerLoaded', function(playerId, xPlayer)
+    local identifier = xPlayer.identifier
+    local playerName = xPlayer.getName()
+
+    -- Vérifier si le joueur a un compte personnel
+    local accounts = GetPlayerAccounts(identifier)
+    local hasPersonal = false
+    local hasBusiness = false
+
+    for _, account in pairs(accounts) do
+        if account.account_type == 'personal' then
+            hasPersonal = true
+        elseif account.account_type == 'business' then
+            hasBusiness = true
+        end
+    end
+
+    -- Créer le compte personnel si nécessaire
+    if not hasPersonal then
+        local accountId, iban = CreatePersonalAccount(identifier, playerName)
+        if Config.Debug then
+            print('[NC_BANK] Compte personnel créé pour ' .. playerName .. ' - IBAN: ' .. iban)
+        end
+    end
+
+    -- Créer le compte entreprise si le joueur a un job éligible
+    if not hasBusiness then
+        local job = xPlayer.getJob()
+        if job and job.name then
+            for _, businessJob in pairs(Config.BusinessJobs) do
+                if job.name == businessJob then
+                    local accountId, iban = CreateBusinessAccount(identifier, playerName, job.name, job.label)
+                    if Config.Debug then
+                        print('[NC_BANK] Compte entreprise créé pour ' .. playerName .. ' (' .. job.label .. ') - IBAN: ' .. iban)
+                    end
+                    break
+                end
+            end
+        end
+    end
+end)
+
+-- ============================================
+-- CALLBACKS
+-- ============================================
+
+-- Récupérer toutes les informations du compte pour l'interface
+ESX.RegisterServerCallback('nc_bank:getFullAccountInfo', function(source, cb)
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then return cb(nil) end
 
+    local accounts = GetPlayerAccounts(xPlayer.identifier)
+    local personalAccount = nil
+    local businessAccount = nil
+
+    -- Séparer les comptes
+    for _, account in pairs(accounts) do
+        if account.account_type == 'personal' then
+            personalAccount = account
+        elseif account.account_type == 'business' then
+            businessAccount = account
+        end
+    end
+
+    -- Récupérer les cartes bancaires
+    local cards = {}
+    if personalAccount then
+        local personalCards = MySQL.query.await('SELECT * FROM nc_bank_cards WHERE account_id = ?', {personalAccount.id})
+        for _, card in pairs(personalCards) do
+            card.account_type = 'personal'
+            table.insert(cards, card)
+        end
+    end
+    if businessAccount then
+        local businessCards = MySQL.query.await('SELECT * FROM nc_bank_cards WHERE account_id = ?', {businessAccount.id})
+        for _, card in pairs(businessCards) do
+            card.account_type = 'business'
+            table.insert(cards, card)
+        end
+    end
+
+    -- Récupérer les transactions récentes (compte personnel)
+    local recentTransactions = {}
+    if personalAccount then
+        recentTransactions = MySQL.query.await('SELECT * FROM nc_bank_transactions WHERE account_id = ? ORDER BY created_at DESC LIMIT ?', {
+            personalAccount.id,
+            Config.RecentTransactionsCount
+        })
+    end
+
     local data = {
         playerName = xPlayer.getName(),
-        balance = xPlayer.getAccount('bank').money,
         cash = xPlayer.getMoney(),
-        serverName = Config.ServerName
+        serverName = Config.ServerName,
+        personalAccount = personalAccount,
+        businessAccount = businessAccount,
+        cards = cards,
+        recentTransactions = recentTransactions
     }
 
     cb(data)
 end)
 
--- Récupérer l'historique des transactions
-ESX.RegisterServerCallback('nc_bank:getTransactions', function(source, cb)
+-- Récupérer l'historique complet des transactions d'un compte
+ESX.RegisterServerCallback('nc_bank:getTransactions', function(source, cb, accountId)
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then return cb({}) end
 
-    local transactions = MySQL.query.await('SELECT * FROM nc_bank_transactions WHERE identifier = ? ORDER BY created_at DESC LIMIT ?', {
-        xPlayer.identifier,
+    -- Vérifier que le compte appartient au joueur
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
+
+    if not account[1] then
+        return cb({})
+    end
+
+    local transactions = MySQL.query.await('SELECT * FROM nc_bank_transactions WHERE account_id = ? ORDER BY created_at DESC LIMIT ?', {
+        accountId,
         Config.MaxTransactionHistory
     })
 
     cb(transactions or {})
 end)
 
+-- Rechercher des transactions par montant et/ou date
+ESX.RegisterServerCallback('nc_bank:searchTransactions', function(source, cb, accountId, filters)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return cb({}) end
+
+    -- Vérifier que le compte appartient au joueur
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
+
+    if not account[1] then
+        return cb({})
+    end
+
+    local query = 'SELECT * FROM nc_bank_transactions WHERE account_id = ?'
+    local params = {accountId}
+
+    -- Filtrer par montant
+    if filters.minAmount then
+        query = query .. ' AND amount >= ?'
+        table.insert(params, tonumber(filters.minAmount))
+    end
+    if filters.maxAmount then
+        query = query .. ' AND amount <= ?'
+        table.insert(params, tonumber(filters.maxAmount))
+    end
+
+    -- Filtrer par date
+    if filters.startDate then
+        query = query .. ' AND created_at >= ?'
+        table.insert(params, filters.startDate)
+    end
+    if filters.endDate then
+        query = query .. ' AND created_at <= ?'
+        table.insert(params, filters.endDate)
+    end
+
+    query = query .. ' ORDER BY created_at DESC LIMIT ?'
+    table.insert(params, Config.MaxTransactionHistory)
+
+    local transactions = MySQL.query.await(query, params)
+    cb(transactions or {})
+end)
+
+-- Récupérer les employés pour un compte entreprise
+ESX.RegisterServerCallback('nc_bank:getBusinessEmployees', function(source, cb, accountId)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return cb({}) end
+
+    -- Vérifier que le compte appartient au joueur et est un compte entreprise
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? AND account_type = "business" LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
+
+    if not account[1] then
+        return cb({})
+    end
+
+    local employees = MySQL.query.await('SELECT * FROM nc_business_employees WHERE business_account_id = ? ORDER BY employee_name ASC', {
+        accountId
+    })
+
+    cb(employees or {})
+end)
+
+-- ============================================
+-- OPÉRATIONS BANCAIRES
+-- ============================================
+
 -- Dépôt d'argent
-RegisterNetEvent('nc_bank:deposit', function(amount)
+RegisterNetEvent('nc_bank:deposit', function(accountId, amount)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
 
@@ -77,6 +334,17 @@ RegisterNetEvent('nc_bank:deposit', function(amount)
     amount = tonumber(amount)
     if not amount or amount <= 0 then
         TriggerClientEvent('esx:showNotification', source, Locale['amount_invalid'])
+        return
+    end
+
+    -- Vérifier que le compte appartient au joueur
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
+
+    if not account[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte non trouvé')
         return
     end
 
@@ -92,21 +360,24 @@ RegisterNetEvent('nc_bank:deposit', function(amount)
         return
     end
 
-    local balanceBefore = xPlayer.getAccount('bank').money
+    local balanceBefore = account[1].balance
 
     xPlayer.removeMoney(amount)
-    xPlayer.addAccountMoney('bank', amount)
+    MySQL.update('UPDATE nc_bank_accounts SET balance = balance + ? WHERE id = ?', {
+        amount,
+        accountId
+    })
 
-    local balanceAfter = xPlayer.getAccount('bank').money
+    local balanceAfter = balanceBefore + amount
 
-    AddTransaction(xPlayer.identifier, 'deposit', amount, balanceBefore, balanceAfter, nil, nil, 'Dépôt en espèces')
+    AddTransaction(accountId, 'deposit', amount, balanceBefore, balanceAfter, nil, 'Dépôt en espèces')
 
     TriggerClientEvent('esx:showNotification', source, Locale['deposit_success']:format(ESX.Math.GroupDigits(amount)))
-    TriggerClientEvent('nc_bank:updateBalance', source, balanceAfter, xPlayer.getMoney())
+    TriggerClientEvent('nc_bank:refreshUI', source)
 end)
 
 -- Retrait d'argent
-RegisterNetEvent('nc_bank:withdraw', function(amount)
+RegisterNetEvent('nc_bank:withdraw', function(accountId, amount)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
 
@@ -118,9 +389,18 @@ RegisterNetEvent('nc_bank:withdraw', function(amount)
         return
     end
 
-    local bankMoney = xPlayer.getAccount('bank').money
+    -- Vérifier que le compte appartient au joueur
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
 
-    if bankMoney < amount then
+    if not account[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte non trouvé')
+        return
+    end
+
+    if account[1].balance < amount then
         TriggerClientEvent('esx:showNotification', source, Locale['not_enough_money_bank'])
         return
     end
@@ -130,42 +410,62 @@ RegisterNetEvent('nc_bank:withdraw', function(amount)
         return
     end
 
-    local balanceBefore = xPlayer.getAccount('bank').money
+    local balanceBefore = account[1].balance
 
-    xPlayer.removeAccountMoney('bank', amount)
+    MySQL.update('UPDATE nc_bank_accounts SET balance = balance - ? WHERE id = ?', {
+        amount,
+        accountId
+    })
     xPlayer.addMoney(amount)
 
-    local balanceAfter = xPlayer.getAccount('bank').money
+    local balanceAfter = balanceBefore - amount
 
-    AddTransaction(xPlayer.identifier, 'withdraw', amount, balanceBefore, balanceAfter, nil, nil, 'Retrait en espèces')
+    AddTransaction(accountId, 'withdraw', amount, balanceBefore, balanceAfter, nil, 'Retrait en espèces')
 
     TriggerClientEvent('esx:showNotification', source, Locale['withdraw_success']:format(ESX.Math.GroupDigits(amount)))
-    TriggerClientEvent('nc_bank:updateBalance', source, balanceAfter, xPlayer.getMoney())
+    TriggerClientEvent('nc_bank:refreshUI', source)
 end)
 
--- Virement bancaire
-RegisterNetEvent('nc_bank:transfer', function(target, amount)
+-- Virement bancaire via IBAN
+RegisterNetEvent('nc_bank:transfer', function(accountId, targetIban, amount)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
 
     amount = tonumber(amount)
-    target = tonumber(target)
 
     if not amount or amount <= 0 then
         TriggerClientEvent('esx:showNotification', source, Locale['amount_invalid'])
         return
     end
 
-    if target == source then
+    if not targetIban or targetIban == '' then
+        TriggerClientEvent('esx:showNotification', source, 'IBAN invalide')
+        return
+    end
+
+    -- Vérifier que le compte appartient au joueur
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
+
+    if not account[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte non trouvé')
+        return
+    end
+
+    -- Vérifier qu'on ne transfère pas vers son propre compte
+    if account[1].iban == targetIban then
         TriggerClientEvent('esx:showNotification', source, Locale['cannot_transfer_self'])
         return
     end
 
-    local xTarget = ESX.GetPlayerFromId(target)
-    if not xTarget then
-        TriggerClientEvent('esx:showNotification', source, Locale['player_not_found'])
+    -- Vérifier que le compte cible existe
+    local targetAccount = GetAccountByIBAN(targetIban)
+    if not targetAccount[1] then
+        TriggerClientEvent('esx:showNotification', source, 'IBAN introuvable')
         return
     end
 
@@ -174,8 +474,6 @@ RegisterNetEvent('nc_bank:transfer', function(target, amount)
         return
     end
 
-    local bankMoney = xPlayer.getAccount('bank').money
-
     -- Calculer les frais
     local fee = math.floor(amount * Config.TransferFee)
     if fee < Config.MinTransferFee then fee = Config.MinTransferFee end
@@ -183,219 +481,287 @@ RegisterNetEvent('nc_bank:transfer', function(target, amount)
 
     local totalAmount = amount + fee
 
-    if bankMoney < totalAmount then
+    if account[1].balance < totalAmount then
         TriggerClientEvent('esx:showNotification', source, Locale['not_enough_money_bank'])
         return
     end
 
-    local senderBalanceBefore = xPlayer.getAccount('bank').money
-    local receiverBalanceBefore = xTarget.getAccount('bank').money
+    local senderBalanceBefore = account[1].balance
+    local receiverBalanceBefore = targetAccount[1].balance
 
     -- Effectuer le virement
-    xPlayer.removeAccountMoney('bank', totalAmount)
-    xTarget.addAccountMoney('bank', amount)
+    MySQL.update('UPDATE nc_bank_accounts SET balance = balance - ? WHERE id = ?', {
+        totalAmount,
+        accountId
+    })
+    MySQL.update('UPDATE nc_bank_accounts SET balance = balance + ? WHERE id = ?', {
+        amount,
+        targetAccount[1].id
+    })
 
-    local senderBalanceAfter = xPlayer.getAccount('bank').money
-    local receiverBalanceAfter = xTarget.getAccount('bank').money
+    local senderBalanceAfter = senderBalanceBefore - totalAmount
+    local receiverBalanceAfter = receiverBalanceBefore + amount
 
     -- Enregistrer les transactions
-    AddTransaction(xPlayer.identifier, 'transfer_sent', amount, senderBalanceBefore, senderBalanceAfter, xTarget.identifier, nil, 'Virement à ' .. xTarget.getName())
-    AddTransaction(xTarget.identifier, 'transfer_received', amount, receiverBalanceBefore, receiverBalanceAfter, nil, xPlayer.identifier, 'Virement de ' .. xPlayer.getName())
+    AddTransaction(accountId, 'transfer_sent', amount, senderBalanceBefore, senderBalanceAfter, targetIban, 'Virement vers ' .. targetIban)
+    AddTransaction(targetAccount[1].id, 'transfer_received', amount, receiverBalanceBefore, receiverBalanceAfter, account[1].iban, 'Virement reçu de ' .. account[1].iban)
 
     -- Notifications
     TriggerClientEvent('esx:showNotification', source, Locale['transfer_success'])
     TriggerClientEvent('esx:showNotification', source, Locale['transfer_fee']:format(ESX.Math.GroupDigits(fee)))
-    TriggerClientEvent('esx:showNotification', target, Locale['transfer_received']:format(ESX.Math.GroupDigits(amount), xPlayer.getName()))
+    TriggerClientEvent('nc_bank:refreshUI', source)
 
-    TriggerClientEvent('nc_bank:updateBalance', source, senderBalanceAfter, xPlayer.getMoney())
-    TriggerClientEvent('nc_bank:updateBalance', target, receiverBalanceAfter, xTarget.getMoney())
+    -- Notifier le destinataire s'il est en ligne
+    local xTarget = ESX.GetPlayerFromIdentifier(targetAccount[1].identifier)
+    if xTarget then
+        TriggerClientEvent('esx:showNotification', xTarget.source, 'Virement reçu: ' .. ESX.Math.GroupDigits(amount) .. '$ de ' .. account[1].iban)
+        TriggerClientEvent('nc_bank:refreshUI', xTarget.source)
+    end
 end)
 
--- Récupérer les comptes d'épargne
-ESX.RegisterServerCallback('nc_bank:getSavingsAccounts', function(source, cb)
-    local xPlayer = ESX.GetPlayerFromId(source)
-    if not xPlayer then return cb({}) end
+-- ============================================
+-- GESTION DES SALAIRES (COMPTE ENTREPRISE)
+-- ============================================
 
-    local accounts = MySQL.query.await('SELECT * FROM nc_savings_accounts WHERE identifier = ?', {
-        xPlayer.identifier
-    })
-
-    cb(accounts or {})
-end)
-
--- Créer un compte d'épargne
-RegisterNetEvent('nc_bank:createSavingsAccount', function(accountName)
+-- Synchroniser les employés d'une entreprise
+RegisterNetEvent('nc_bank:syncBusinessEmployees', function(accountId)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
 
-    -- Vérifier le nombre de comptes
-    local accounts = MySQL.query.await('SELECT COUNT(*) as count FROM nc_savings_accounts WHERE identifier = ?', {
+    -- Vérifier que le compte appartient au joueur et est un compte entreprise
+    local account = MySQL.query.await('SELECT a.*, b.job_name FROM nc_bank_accounts a JOIN nc_business_accounts b ON a.id = b.account_id WHERE a.id = ? AND a.identifier = ? AND a.account_type = "business" LIMIT 1', {
+        accountId,
         xPlayer.identifier
     })
 
-    if accounts[1].count >= Config.MaxSavingsAccounts then
-        TriggerClientEvent('esx:showNotification', source, Locale['max_savings_reached'])
+    if not account[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte entreprise non trouvé')
         return
     end
 
-    MySQL.insert('INSERT INTO nc_savings_accounts (identifier, account_name, balance) VALUES (?, ?, 0)', {
-        xPlayer.identifier,
-        accountName or 'Compte Épargne'
-    })
+    local jobName = account[1].job_name
 
-    TriggerClientEvent('esx:showNotification', source, Locale['savings_created'])
-    TriggerClientEvent('nc_bank:refreshSavings', source)
+    -- Récupérer tous les joueurs avec ce job
+    local xPlayers = ESX.GetExtendedPlayers('job', jobName)
+
+    for _, xEmployee in pairs(xPlayers) do
+        local job = xEmployee.getJob()
+
+        -- Vérifier si l'employé existe déjà
+        local existing = MySQL.query.await('SELECT id FROM nc_business_employees WHERE business_account_id = ? AND employee_identifier = ? LIMIT 1', {
+            accountId,
+            xEmployee.identifier
+        })
+
+        if not existing[1] then
+            -- Ajouter l'employé
+            MySQL.insert('INSERT INTO nc_business_employees (business_account_id, employee_identifier, employee_name, job_grade, job_grade_name, salary) VALUES (?, ?, ?, ?, ?, ?)', {
+                accountId,
+                xEmployee.identifier,
+                xEmployee.getName(),
+                job.grade,
+                job.grade_label,
+                job.grade_salary or 0
+            })
+        else
+            -- Mettre à jour l'employé
+            MySQL.update('UPDATE nc_business_employees SET employee_name = ?, job_grade = ?, job_grade_name = ?, salary = ? WHERE id = ?', {
+                xEmployee.getName(),
+                job.grade,
+                job.grade_label,
+                job.grade_salary or 0,
+                existing[1].id
+            })
+        end
+    end
+
+    TriggerClientEvent('esx:showNotification', source, 'Employés synchronisés')
+    TriggerClientEvent('nc_bank:refreshUI', source)
 end)
 
--- Déposer sur un compte d'épargne
-RegisterNetEvent('nc_bank:savingsDeposit', function(accountId, amount)
+-- Payer le salaire d'un employé
+RegisterNetEvent('nc_bank:paySalary', function(accountId, employeeId)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
 
-    amount = tonumber(amount)
-    if not amount or amount <= 0 then
-        TriggerClientEvent('esx:showNotification', source, Locale['amount_invalid'])
-        return
-    end
-
-    local bankMoney = xPlayer.getAccount('bank').money
-    if bankMoney < amount then
-        TriggerClientEvent('esx:showNotification', source, Locale['not_enough_money_bank'])
-        return
-    end
-
-    local balanceBefore = xPlayer.getAccount('bank').money
-
-    xPlayer.removeAccountMoney('bank', amount)
-    MySQL.update('UPDATE nc_savings_accounts SET balance = balance + ? WHERE id = ? AND identifier = ?', {
-        amount,
+    -- Vérifier que le compte appartient au joueur et est un compte entreprise
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? AND account_type = "business" LIMIT 1', {
         accountId,
         xPlayer.identifier
     })
 
-    local balanceAfter = xPlayer.getAccount('bank').money
+    if not account[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte entreprise non trouvé')
+        return
+    end
 
-    AddTransaction(xPlayer.identifier, 'savings_deposit', amount, balanceBefore, balanceAfter, nil, nil, 'Dépôt sur compte épargne')
+    -- Récupérer l'employé
+    local employee = MySQL.query.await('SELECT * FROM nc_business_employees WHERE id = ? AND business_account_id = ? LIMIT 1', {
+        employeeId,
+        accountId
+    })
 
-    TriggerClientEvent('esx:showNotification', source, Locale['deposit_success']:format(ESX.Math.GroupDigits(amount)))
-    TriggerClientEvent('nc_bank:refreshSavings', source)
-    TriggerClientEvent('nc_bank:updateBalance', source, balanceAfter, xPlayer.getMoney())
+    if not employee[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Employé non trouvé')
+        return
+    end
+
+    -- Vérifier l'intervalle de paiement
+    if employee[1].last_payment then
+        local lastPaymentTime = os.time({
+            year = tonumber(string.sub(employee[1].last_payment, 1, 4)),
+            month = tonumber(string.sub(employee[1].last_payment, 6, 7)),
+            day = tonumber(string.sub(employee[1].last_payment, 9, 10)),
+            hour = tonumber(string.sub(employee[1].last_payment, 12, 13)),
+            min = tonumber(string.sub(employee[1].last_payment, 15, 16)),
+            sec = tonumber(string.sub(employee[1].last_payment, 18, 19))
+        })
+
+        local timeSinceLastPayment = os.difftime(os.time(), lastPaymentTime) / 3600 -- en heures
+
+        if timeSinceLastPayment < Config.MinSalaryInterval then
+            TriggerClientEvent('esx:showNotification', source, 'Vous devez attendre ' .. math.floor(Config.MinSalaryInterval - timeSinceLastPayment) .. ' heures avant le prochain paiement')
+            return
+        end
+    end
+
+    local salary = employee[1].salary
+
+    if salary <= 0 then
+        TriggerClientEvent('esx:showNotification', source, 'Salaire invalide')
+        return
+    end
+
+    if account[1].balance < salary then
+        TriggerClientEvent('esx:showNotification', source, 'Fonds insuffisants sur le compte entreprise')
+        return
+    end
+
+    -- Récupérer le compte personnel de l'employé
+    local employeeAccount = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE identifier = ? AND account_type = "personal" LIMIT 1', {
+        employee[1].employee_identifier
+    })
+
+    if not employeeAccount[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte personnel de l\'employé non trouvé')
+        return
+    end
+
+    local businessBalanceBefore = account[1].balance
+    local employeeBalanceBefore = employeeAccount[1].balance
+
+    -- Effectuer le paiement
+    MySQL.update('UPDATE nc_bank_accounts SET balance = balance - ? WHERE id = ?', {
+        salary,
+        accountId
+    })
+    MySQL.update('UPDATE nc_bank_accounts SET balance = balance + ? WHERE id = ?', {
+        salary,
+        employeeAccount[1].id
+    })
+
+    -- Mettre à jour la date de dernier paiement
+    MySQL.update('UPDATE nc_business_employees SET last_payment = NOW() WHERE id = ?', {
+        employeeId
+    })
+
+    local businessBalanceAfter = businessBalanceBefore - salary
+    local employeeBalanceAfter = employeeBalanceBefore + salary
+
+    -- Enregistrer les transactions
+    AddTransaction(accountId, 'transfer_sent', salary, businessBalanceBefore, businessBalanceAfter, employeeAccount[1].iban, 'Salaire payé à ' .. employee[1].employee_name)
+    AddTransaction(employeeAccount[1].id, 'transfer_received', salary, employeeBalanceBefore, employeeBalanceAfter, account[1].iban, 'Salaire reçu')
+
+    -- Notifications
+    TriggerClientEvent('esx:showNotification', source, 'Salaire payé: ' .. ESX.Math.GroupDigits(salary) .. '$ à ' .. employee[1].employee_name)
+    TriggerClientEvent('nc_bank:refreshUI', source)
+
+    -- Notifier l'employé s'il est en ligne
+    local xEmployee = ESX.GetPlayerFromIdentifier(employee[1].employee_identifier)
+    if xEmployee then
+        TriggerClientEvent('esx:showNotification', xEmployee.source, 'Salaire reçu: ' .. ESX.Math.GroupDigits(salary) .. '$')
+        TriggerClientEvent('nc_bank:refreshUI', xEmployee.source)
+    end
 end)
 
--- Retirer d'un compte d'épargne
-RegisterNetEvent('nc_bank:savingsWithdraw', function(accountId, amount)
+-- ============================================
+-- GESTION DU CODE PIN
+-- ============================================
+
+-- Changer le code PIN
+RegisterNetEvent('nc_bank:changePIN', function(accountId, oldPIN, newPIN)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
 
-    amount = tonumber(amount)
-    if not amount or amount <= 0 then
-        TriggerClientEvent('esx:showNotification', source, Locale['amount_invalid'])
+    -- Vérifier que le compte appartient au joueur
+    local account = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE id = ? AND identifier = ? LIMIT 1', {
+        accountId,
+        xPlayer.identifier
+    })
+
+    if not account[1] then
+        TriggerClientEvent('esx:showNotification', source, 'Compte non trouvé')
         return
     end
 
-    local account = MySQL.query.await('SELECT balance FROM nc_savings_accounts WHERE id = ? AND identifier = ?', {
-        accountId,
-        xPlayer.identifier
-    })
-
-    if not account[1] or account[1].balance < amount then
-        TriggerClientEvent('esx:showNotification', source, Locale['not_enough_money_bank'])
+    -- Vérifier l'ancien PIN
+    if account[1].pin_code ~= oldPIN then
+        TriggerClientEvent('esx:showNotification', source, 'Code PIN incorrect')
         return
     end
 
-    local balanceBefore = xPlayer.getAccount('bank').money
-
-    MySQL.update('UPDATE nc_savings_accounts SET balance = balance - ? WHERE id = ? AND identifier = ?', {
-        amount,
-        accountId,
-        xPlayer.identifier
-    })
-    xPlayer.addAccountMoney('bank', amount)
-
-    local balanceAfter = xPlayer.getAccount('bank').money
-
-    AddTransaction(xPlayer.identifier, 'savings_withdraw', amount, balanceBefore, balanceAfter, nil, nil, 'Retrait du compte épargne')
-
-    TriggerClientEvent('esx:showNotification', source, Locale['withdraw_success']:format(ESX.Math.GroupDigits(amount)))
-    TriggerClientEvent('nc_bank:refreshSavings', source)
-    TriggerClientEvent('nc_bank:updateBalance', source, balanceAfter, xPlayer.getMoney())
-end)
-
--- Supprimer un compte d'épargne
-RegisterNetEvent('nc_bank:deleteSavingsAccount', function(accountId)
-    local source = source
-    local xPlayer = ESX.GetPlayerFromId(source)
-
-    if not xPlayer then return end
-
-    -- Récupérer le solde et le transférer au compte principal
-    local account = MySQL.query.await('SELECT balance FROM nc_savings_accounts WHERE id = ? AND identifier = ?', {
-        accountId,
-        xPlayer.identifier
-    })
-
-    if account[1] and account[1].balance > 0 then
-        xPlayer.addAccountMoney('bank', account[1].balance)
+    -- Vérifier le format du nouveau PIN (4 chiffres)
+    if not newPIN or string.len(newPIN) ~= 4 or not tonumber(newPIN) then
+        TriggerClientEvent('esx:showNotification', source, 'Le nouveau PIN doit contenir 4 chiffres')
+        return
     end
 
-    MySQL.query('DELETE FROM nc_savings_accounts WHERE id = ? AND identifier = ?', {
-        accountId,
-        xPlayer.identifier
+    -- Mettre à jour le PIN
+    MySQL.update('UPDATE nc_bank_accounts SET pin_code = ? WHERE id = ?', {
+        newPIN,
+        accountId
     })
 
-    TriggerClientEvent('esx:showNotification', source, Locale['savings_deleted'])
-    TriggerClientEvent('nc_bank:refreshSavings', source)
+    TriggerClientEvent('esx:showNotification', source, 'Code PIN modifié avec succès')
+    TriggerClientEvent('nc_bank:refreshUI', source)
 end)
 
--- Système d'intérêts (thread)
+-- ============================================
+-- SYSTÈME D'INTÉRÊTS
+-- ============================================
+
 if Config.EnableInterests then
     CreateThread(function()
         while true do
-            Wait(Config.InterestCycle * 60 * 1000) -- Convertir en millisecondes
+            Wait(Config.InterestCycle * 60 * 60 * 1000) -- Convertir en millisecondes
 
-            local xPlayers = ESX.GetExtendedPlayers()
+            -- Récupérer tous les comptes personnels
+            local accounts = MySQL.query.await('SELECT * FROM nc_bank_accounts WHERE account_type = "personal" AND balance > 0', {})
 
-            for _, xPlayer in pairs(xPlayers) do
-                local bankMoney = xPlayer.getAccount('bank').money
+            for _, account in pairs(accounts) do
+                local interest = math.floor(account.balance * Config.InterestRate)
 
-                if bankMoney > 0 then
-                    local interest = math.floor(bankMoney * Config.InterestRate)
+                if interest > 0 then
+                    local balanceBefore = account.balance
+                    MySQL.update('UPDATE nc_bank_accounts SET balance = balance + ? WHERE id = ?', {
+                        interest,
+                        account.id
+                    })
+                    local balanceAfter = balanceBefore + interest
 
-                    if interest > 0 then
-                        local balanceBefore = bankMoney
-                        xPlayer.addAccountMoney('bank', interest)
-                        local balanceAfter = xPlayer.getAccount('bank').money
+                    AddTransaction(account.id, 'interest', interest, balanceBefore, balanceAfter, nil, 'Intérêts bancaires')
 
-                        AddTransaction(xPlayer.identifier, 'interest', interest, balanceBefore, balanceAfter, nil, nil, 'Intérêts bancaires')
-
-                        TriggerClientEvent('esx:showNotification', xPlayer.source, Locale['interest_earned']:format(ESX.Math.GroupDigits(interest)))
-                        TriggerClientEvent('nc_bank:updateBalance', xPlayer.source, balanceAfter, xPlayer.getMoney())
-                    end
-                end
-
-                -- Intérêts sur les comptes d'épargne
-                local savingsAccounts = MySQL.query.await('SELECT * FROM nc_savings_accounts WHERE identifier = ?', {
-                    xPlayer.identifier
-                })
-
-                for _, account in pairs(savingsAccounts) do
-                    if account.balance > 0 then
-                        local savingsInterest = math.floor(account.balance * (Config.SavingsInterestRate / 100))
-
-                        if savingsInterest > 0 then
-                            MySQL.update('UPDATE nc_savings_accounts SET balance = balance + ?, last_interest = NOW() WHERE id = ?', {
-                                savingsInterest,
-                                account.id
-                            })
-
-                            TriggerClientEvent('esx:showNotification', xPlayer.source, Locale['interest_earned']:format(ESX.Math.GroupDigits(savingsInterest)) .. ' (Épargne)')
-                        end
+                    -- Notifier le joueur s'il est en ligne
+                    local xPlayer = ESX.GetPlayerFromIdentifier(account.identifier)
+                    if xPlayer then
+                        TriggerClientEvent('esx:showNotification', xPlayer.source, 'Intérêts reçus: ' .. ESX.Math.GroupDigits(interest) .. '$')
+                        TriggerClientEvent('nc_bank:refreshUI', xPlayer.source)
                     end
                 end
             end
@@ -407,102 +773,4 @@ if Config.EnableInterests then
     end)
 end
 
--- Commande pour ouvrir la banque (désactivée)
--- RegisterCommand('bank', function(source)
---     TriggerClientEvent('nc_bank:openUI', source)
--- end)
-
--- Event pour ATM depuis le client
-RegisterNetEvent('nc_bank:atmWithdraw', function(amount)
-    local source = source
-    local xPlayer = ESX.GetPlayerFromId(source)
-
-    if not xPlayer then return end
-
-    amount = tonumber(amount)
-    if not amount or amount <= 0 then
-        TriggerClientEvent('esx:showNotification', source, Locale['amount_invalid'])
-        return
-    end
-
-    if amount > Config.ATMWithdrawLimit then
-        TriggerClientEvent('esx:showNotification', source, Locale['atm_withdraw_limit']:format(Config.ATMWithdrawLimit))
-        return
-    end
-
-    local bankMoney = xPlayer.getAccount('bank').money
-
-    if bankMoney < amount then
-        TriggerClientEvent('esx:showNotification', source, Locale['not_enough_money_bank'])
-        return
-    end
-
-    local balanceBefore = xPlayer.getAccount('bank').money
-
-    xPlayer.removeAccountMoney('bank', amount)
-    xPlayer.addMoney(amount)
-
-    local balanceAfter = xPlayer.getAccount('bank').money
-
-    AddTransaction(xPlayer.identifier, 'withdraw', amount, balanceBefore, balanceAfter, nil, nil, 'Retrait ATM')
-
-    TriggerClientEvent('esx:showNotification', source, Locale['withdraw_success']:format(ESX.Math.GroupDigits(amount)))
-    TriggerClientEvent('nc_bank:updateBalance', source, balanceAfter, xPlayer.getMoney())
-end)
-
-RegisterNetEvent('nc_bank:atmDeposit', function(amount)
-    local source = source
-    local xPlayer = ESX.GetPlayerFromId(source)
-
-    if not xPlayer then return end
-
-    amount = tonumber(amount)
-    if not amount or amount <= 0 then
-        TriggerClientEvent('esx:showNotification', source, Locale['amount_invalid'])
-        return
-    end
-
-    if amount > Config.ATMDepositLimit then
-        TriggerClientEvent('esx:showNotification', source, Locale['atm_deposit_limit']:format(Config.ATMDepositLimit))
-        return
-    end
-
-    local playerMoney = xPlayer.getMoney()
-
-    if playerMoney < amount then
-        TriggerClientEvent('esx:showNotification', source, Locale['not_enough_money'])
-        return
-    end
-
-    local balanceBefore = xPlayer.getAccount('bank').money
-
-    xPlayer.removeMoney(amount)
-    xPlayer.addAccountMoney('bank', amount)
-
-    local balanceAfter = xPlayer.getAccount('bank').money
-
-    AddTransaction(xPlayer.identifier, 'deposit', amount, balanceBefore, balanceAfter, nil, nil, 'Dépôt ATM')
-
-    TriggerClientEvent('esx:showNotification', source, Locale['deposit_success']:format(ESX.Math.GroupDigits(amount)))
-    TriggerClientEvent('nc_bank:updateBalance', source, balanceAfter, xPlayer.getMoney())
-end)
-
--- Récupérer les joueurs en ligne pour les virements
-ESX.RegisterServerCallback('nc_bank:getOnlinePlayers', function(source, cb)
-    local xPlayers = ESX.GetExtendedPlayers()
-    local players = {}
-
-    for _, xPlayer in pairs(xPlayers) do
-        if xPlayer.source ~= source then
-            table.insert(players, {
-                id = xPlayer.source,
-                name = xPlayer.getName(),
-                identifier = xPlayer.identifier
-            })
-        end
-    end
-
-    cb(players)
-end)
-
-print('^2[NC_BANK]^7 NorthCounty Bank System chargé avec succès!')
+print('^2[NC_BANK]^7 NorthCounty Bank System V2 chargé avec succès!')

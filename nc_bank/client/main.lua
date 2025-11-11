@@ -1,8 +1,5 @@
 local Locale = Locales['fr']
 local isUIOpen = false
-local currentAccount = nil
-local currentTransactions = {}
-local currentSavings = {}
 
 -- Initialisation ESX
 ESX = exports["es_extended"]:getSharedObject()
@@ -71,28 +68,14 @@ end)
 function OpenBankUI()
     if isUIOpen then return end
 
-    ESX.TriggerServerCallback('nc_bank:getAccountInfo', function(data)
+    ESX.TriggerServerCallback('nc_bank:getFullAccountInfo', function(data)
         if data then
-            currentAccount = data
-
-            ESX.TriggerServerCallback('nc_bank:getTransactions', function(transactions)
-                currentTransactions = transactions
-
-                ESX.TriggerServerCallback('nc_bank:getSavingsAccounts', function(savings)
-                    currentSavings = savings
-
-                    SetNuiFocus(true, true)
-                    SendNUIMessage({
-                        action = 'openBank',
-                        data = {
-                            account = currentAccount,
-                            transactions = currentTransactions,
-                            savings = currentSavings
-                        }
-                    })
-                    isUIOpen = true
-                end)
-            end)
+            SetNuiFocus(true, true)
+            SendNUIMessage({
+                action = 'openBank',
+                data = data
+            })
+            isUIOpen = true
         end
     end)
 end
@@ -102,113 +85,98 @@ RegisterNetEvent('nc_bank:openUI', function()
     OpenBankUI()
 end)
 
--- Event pour mettre à jour le solde
-RegisterNetEvent('nc_bank:updateBalance', function(bankBalance, cash)
-    if currentAccount then
-        currentAccount.balance = bankBalance
-        currentAccount.cash = cash
-
-        if isUIOpen then
-            SendNUIMessage({
-                action = 'updateBalance',
-                balance = bankBalance,
-                cash = cash
-            })
-        end
+-- Event pour rafraîchir l'UI
+RegisterNetEvent('nc_bank:refreshUI', function()
+    if isUIOpen then
+        SendNUIMessage({
+            action = 'refreshUI'
+        })
     end
 end)
 
--- Event pour rafraîchir les comptes d'épargne
-RegisterNetEvent('nc_bank:refreshSavings', function()
-    ESX.TriggerServerCallback('nc_bank:getSavingsAccounts', function(savings)
-        currentSavings = savings
+-- ============================================
+-- NUI CALLBACKS
+-- ============================================
 
-        if isUIOpen then
-            SendNUIMessage({
-                action = 'updateSavings',
-                savings = currentSavings
-            })
-        end
-    end)
-end)
-
--- Callbacks NUI
+-- Fermer l'interface
 RegisterNUICallback('close', function(data, cb)
     SetNuiFocus(false, false)
     isUIOpen = false
     cb('ok')
 end)
 
-RegisterNUICallback('deposit', function(data, cb)
-    local amount = tonumber(data.amount)
-    if amount and amount > 0 then
-        TriggerServerEvent('nc_bank:deposit', amount)
-    end
-    cb('ok')
-end)
-
-RegisterNUICallback('withdraw', function(data, cb)
-    local amount = tonumber(data.amount)
-    if amount and amount > 0 then
-        TriggerServerEvent('nc_bank:withdraw', amount)
-    end
-    cb('ok')
-end)
-
-RegisterNUICallback('transfer', function(data, cb)
-    local amount = tonumber(data.amount)
-    local target = tonumber(data.target)
-
-    if amount and amount > 0 and target then
-        TriggerServerEvent('nc_bank:transfer', target, amount)
-    end
-    cb('ok')
-end)
-
-RegisterNUICallback('getOnlinePlayers', function(data, cb)
-    ESX.TriggerServerCallback('nc_bank:getOnlinePlayers', function(players)
-        cb(players)
+-- Récupérer les informations complètes (pour refresh)
+RegisterNUICallback('getFullAccountInfo', function(data, cb)
+    ESX.TriggerServerCallback('nc_bank:getFullAccountInfo', function(accountData)
+        cb(accountData)
     end)
 end)
 
-RegisterNUICallback('createSavingsAccount', function(data, cb)
-    TriggerServerEvent('nc_bank:createSavingsAccount', data.name)
-    cb('ok')
-end)
-
-RegisterNUICallback('savingsDeposit', function(data, cb)
+-- Dépôt
+RegisterNUICallback('deposit', function(data, cb)
     local amount = tonumber(data.amount)
     local accountId = tonumber(data.accountId)
 
     if amount and amount > 0 and accountId then
-        TriggerServerEvent('nc_bank:savingsDeposit', accountId, amount)
+        TriggerServerEvent('nc_bank:deposit', accountId, amount)
     end
     cb('ok')
 end)
 
-RegisterNUICallback('savingsWithdraw', function(data, cb)
+-- Retrait
+RegisterNUICallback('withdraw', function(data, cb)
     local amount = tonumber(data.amount)
     local accountId = tonumber(data.accountId)
 
     if amount and amount > 0 and accountId then
-        TriggerServerEvent('nc_bank:savingsWithdraw', accountId, amount)
+        TriggerServerEvent('nc_bank:withdraw', accountId, amount)
     end
     cb('ok')
 end)
 
-RegisterNUICallback('deleteSavingsAccount', function(data, cb)
+-- Virement
+RegisterNUICallback('transfer', function(data, cb)
+    local amount = tonumber(data.amount)
+    local accountId = tonumber(data.accountId)
+    local targetIban = data.targetIban
+
+    if amount and amount > 0 and accountId and targetIban then
+        TriggerServerEvent('nc_bank:transfer', accountId, targetIban, amount)
+    end
+    cb('ok')
+end)
+
+-- Changer le code PIN
+RegisterNUICallback('changePIN', function(data, cb)
+    local accountId = tonumber(data.accountId)
+    local oldPIN = data.oldPIN
+    local newPIN = data.newPIN
+
+    if accountId and oldPIN and newPIN then
+        TriggerServerEvent('nc_bank:changePIN', accountId, oldPIN, newPIN)
+    end
+    cb('ok')
+end)
+
+-- Synchroniser les employés
+RegisterNUICallback('syncEmployees', function(data, cb)
     local accountId = tonumber(data.accountId)
 
     if accountId then
-        TriggerServerEvent('nc_bank:deleteSavingsAccount', accountId)
+        TriggerServerEvent('nc_bank:syncBusinessEmployees', accountId)
     end
     cb('ok')
 end)
 
-RegisterNUICallback('refreshTransactions', function(data, cb)
-    ESX.TriggerServerCallback('nc_bank:getTransactions', function(transactions)
-        cb(transactions)
-    end)
+-- Payer un salaire
+RegisterNUICallback('paySalary', function(data, cb)
+    local accountId = tonumber(data.accountId)
+    local employeeId = tonumber(data.employeeId)
+
+    if accountId and employeeId then
+        TriggerServerEvent('nc_bank:paySalary', accountId, employeeId)
+    end
+    cb('ok')
 end)
 
 -- Animation de dépôt/retrait

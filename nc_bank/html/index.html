@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NorthCounty Bank</title>
+    <title>NorthCounty Bank V2</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="bank-container" style="display: none;">
@@ -18,104 +18,228 @@
                     <span class="logo-icon">🏦</span>
                     <h1 id="server-name">NorthCounty Bank</h1>
                 </div>
+                <div class="header-info">
+                    <div class="player-name" id="player-name">Chargement...</div>
+                </div>
                 <button class="close-btn" onclick="closeBank()">✕</button>
             </div>
 
-            <!-- Main Content -->
-            <div class="bank-content">
-                <!-- Sidebar -->
-                <div class="sidebar">
-                    <div class="account-info">
-                        <div class="account-label">Titulaire du compte</div>
-                        <div class="account-name" id="account-name">Chargement...</div>
-                        <div class="balance-display">
-                            <div class="balance-label">Solde bancaire</div>
-                            <div class="balance-amount" id="balance-amount">$0</div>
+            <!-- Account Selector -->
+            <div class="account-selector">
+                <button class="account-btn active" data-account="personal" id="personal-btn">
+                    💳 Compte Personnel
+                </button>
+                <button class="account-btn" data-account="business" id="business-btn" style="display: none;">
+                    🏢 Compte Entreprise
+                </button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <button class="tab-btn active" data-tab="home">
+                    <span class="tab-icon">🏠</span>
+                    Accueil
+                </button>
+                <button class="tab-btn" data-tab="card">
+                    <span class="tab-icon">💳</span>
+                    Carte Bancaire
+                </button>
+                <button class="tab-btn" data-tab="transactions">
+                    <span class="tab-icon">📊</span>
+                    Transactions
+                </button>
+                <button class="tab-btn" data-tab="account">
+                    <span class="tab-icon">⚙️</span>
+                    Compte
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-wrapper">
+                <!-- HOME TAB -->
+                <div class="tab-content active" id="home-tab">
+                    <div class="home-grid">
+                        <!-- Account Overview -->
+                        <div class="overview-card">
+                            <h3>Aperçu du compte</h3>
+                            <div class="balance-display">
+                                <div class="balance-label">Solde disponible</div>
+                                <div class="balance-amount" id="home-balance">$0</div>
+                            </div>
+                            <div class="cash-display">
+                                <div class="cash-label">Espèces sur vous</div>
+                                <div class="cash-amount" id="home-cash">$0</div>
+                            </div>
+                            <div class="account-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">IBAN:</span>
+                                    <span class="detail-value" id="home-iban">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Code PIN:</span>
+                                    <span class="detail-value pin-masked" id="home-pin">****</span>
+                                    <button class="btn-icon" onclick="togglePIN()">👁️</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="cash-display">
-                            <div class="cash-label">Espèces</div>
-                            <div class="cash-amount" id="cash-amount">$0</div>
+
+                        <!-- Quick Actions -->
+                        <div class="actions-card">
+                            <h3>Actions rapides</h3>
+                            <div class="quick-actions">
+                                <div class="action-item">
+                                    <label>Montant</label>
+                                    <input type="number" id="quick-amount" placeholder="0" min="0">
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-success" onclick="quickDeposit()">
+                                        📥 Déposer
+                                    </button>
+                                    <button class="btn btn-danger" onclick="quickWithdraw()">
+                                        📤 Retirer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transfer -->
+                        <div class="transfer-card">
+                            <h3>Effectuer un virement</h3>
+                            <div class="transfer-form">
+                                <div class="form-group">
+                                    <label>IBAN de destination</label>
+                                    <input type="text" id="transfer-iban" placeholder="NC..." maxlength="34">
+                                </div>
+                                <div class="form-group">
+                                    <label>Montant</label>
+                                    <input type="number" id="transfer-amount" placeholder="0" min="0">
+                                </div>
+                                <div class="transfer-info">
+                                    ⚠️ Frais de virement: 1% (min 5$, max 250$)
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="makeTransfer()">
+                                    💸 Envoyer le virement
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Transactions -->
+                        <div class="recent-card">
+                            <h3>Transactions récentes</h3>
+                            <div class="recent-list" id="recent-transactions">
+                                <!-- Populated by JS -->
+                            </div>
                         </div>
                     </div>
-
-                    <nav class="nav-menu">
-                        <button class="nav-item active" data-section="operations">
-                            <span class="nav-icon">💰</span>
-                            Opérations
-                        </button>
-                        <button class="nav-item" data-section="transfer">
-                            <span class="nav-icon">💸</span>
-                            Virements
-                        </button>
-                        <button class="nav-item" data-section="savings">
-                            <span class="nav-icon">🏦</span>
-                            Épargne
-                        </button>
-                        <button class="nav-item" data-section="history">
-                            <span class="nav-icon">📊</span>
-                            Historique
-                        </button>
-                    </nav>
                 </div>
 
-                <!-- Content Area -->
-                <div class="content-area">
-                    <!-- Operations Section -->
-                    <div class="section active" id="operations-section">
-                        <h2>Opérations bancaires</h2>
-                        <div class="operations-grid">
-                            <div class="operation-card">
-                                <div class="operation-icon">📥</div>
-                                <h3>Déposer de l'argent</h3>
-                                <input type="number" id="deposit-amount" placeholder="Montant" min="0">
-                                <button class="btn btn-primary" onclick="deposit()">Déposer</button>
-                            </div>
-
-                            <div class="operation-card">
-                                <div class="operation-icon">📤</div>
-                                <h3>Retirer de l'argent</h3>
-                                <input type="number" id="withdraw-amount" placeholder="Montant" min="0">
-                                <button class="btn btn-danger" onclick="withdraw()">Retirer</button>
-                            </div>
+                <!-- CARD TAB -->
+                <div class="tab-content" id="card-tab">
+                    <div class="card-display-container">
+                        <h2>Vos cartes bancaires</h2>
+                        <div class="cards-grid" id="cards-list">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
+                </div>
 
-                    <!-- Transfer Section -->
-                    <div class="section" id="transfer-section">
-                        <h2>Effectuer un virement</h2>
-                        <div class="transfer-container">
-                            <div class="form-group">
-                                <label>Sélectionner le bénéficiaire</label>
-                                <select id="transfer-target" class="form-control">
-                                    <option value="">Chargement des joueurs...</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Montant</label>
-                                <input type="number" id="transfer-amount" class="form-control" placeholder="Montant à transférer" min="0">
-                            </div>
-                            <div class="transfer-info">
-                                <p>⚠️ Des frais de 2% seront appliqués sur ce virement</p>
-                            </div>
-                            <button class="btn btn-primary btn-large" onclick="transfer()">Effectuer le virement</button>
-                        </div>
-                    </div>
-
-                    <!-- Savings Section -->
-                    <div class="section" id="savings-section">
-                        <h2>Comptes d'épargne</h2>
-                        <button class="btn btn-success" onclick="createSavingsAccount()">+ Créer un compte d'épargne</button>
-                        <div id="savings-list" class="savings-list">
-                            <!-- Savings accounts will be loaded here -->
-                        </div>
-                    </div>
-
-                    <!-- History Section -->
-                    <div class="section" id="history-section">
+                <!-- TRANSACTIONS TAB -->
+                <div class="tab-content" id="transactions-tab">
+                    <div class="transactions-container">
                         <h2>Historique des transactions</h2>
-                        <button class="btn btn-secondary" onclick="refreshHistory()">🔄 Actualiser</button>
-                        <div class="transactions-list" id="transactions-list">
-                            <!-- Transactions will be loaded here -->
+
+                        <!-- Search Filters -->
+                        <div class="search-filters">
+                            <div class="filter-group">
+                                <label>Montant minimum</label>
+                                <input type="number" id="filter-min-amount" placeholder="0" min="0">
+                            </div>
+                            <div class="filter-group">
+                                <label>Montant maximum</label>
+                                <input type="number" id="filter-max-amount" placeholder="0" min="0">
+                            </div>
+                            <div class="filter-group">
+                                <label>Date de début</label>
+                                <input type="date" id="filter-start-date">
+                            </div>
+                            <div class="filter-group">
+                                <label>Date de fin</label>
+                                <input type="date" id="filter-end-date">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="btn btn-primary" onclick="searchTransactions()">
+                                    🔍 Rechercher
+                                </button>
+                                <button class="btn btn-secondary" onclick="resetFilters()">
+                                    🔄 Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Transactions List -->
+                        <div class="all-transactions" id="all-transactions">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCOUNT TAB -->
+                <div class="tab-content" id="account-tab">
+                    <div class="account-settings-container">
+                        <h2>Paramètres du compte</h2>
+
+                        <!-- Personal Account Settings -->
+                        <div class="settings-section" id="personal-settings">
+                            <h3>Sécurité</h3>
+                            <div class="pin-change-form">
+                                <div class="form-group">
+                                    <label>Code PIN actuel</label>
+                                    <input type="password" id="old-pin" placeholder="****" maxlength="4">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nouveau code PIN</label>
+                                    <input type="password" id="new-pin" placeholder="****" maxlength="4">
+                                </div>
+                                <div class="form-group">
+                                    <label>Confirmer le nouveau code PIN</label>
+                                    <input type="password" id="confirm-pin" placeholder="****" maxlength="4">
+                                </div>
+                                <button class="btn btn-primary" onclick="changePIN()">
+                                    🔒 Modifier le code PIN
+                                </button>
+                            </div>
+
+                            <h3 style="margin-top: 30px;">Informations du compte</h3>
+                            <div class="account-info-display">
+                                <div class="info-row">
+                                    <span class="info-label">Type de compte:</span>
+                                    <span class="info-value" id="account-type-display">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Nom du compte:</span>
+                                    <span class="info-value" id="account-name-display">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">IBAN:</span>
+                                    <span class="info-value" id="account-iban-display">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Date de création:</span>
+                                    <span class="info-value" id="account-created-display">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Business Account Settings -->
+                        <div class="settings-section" id="business-settings" style="display: none;">
+                            <h3>Gestion des salaires</h3>
+                            <button class="btn btn-secondary" onclick="syncEmployees()" style="margin-bottom: 20px;">
+                                🔄 Synchroniser les employés
+                            </button>
+
+                            <div class="employees-list" id="employees-list">
+                                <!-- Populated by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
