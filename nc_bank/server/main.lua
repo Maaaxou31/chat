@@ -143,29 +143,18 @@ local function CreateBusinessAccount(identifier, playerName, jobName, jobLabel)
     return accountId, iban
 end
 
--- Event: Joueur connecté (vérifier et créer les comptes si nécessaire)
+-- Event: Joueur connecté (vérifier et créer le compte entreprise si nécessaire)
 AddEventHandler('esx:playerLoaded', function(playerId, xPlayer)
     local identifier = xPlayer.identifier
     local playerName = xPlayer.getName()
 
-    -- Vérifier si le joueur a un compte personnel
+    -- Vérifier si le joueur a un compte entreprise
     local accounts = GetPlayerAccounts(identifier)
-    local hasPersonal = false
     local hasBusiness = false
 
     for _, account in pairs(accounts) do
-        if account.account_type == 'personal' then
-            hasPersonal = true
-        elseif account.account_type == 'business' then
+        if account.account_type == 'business' then
             hasBusiness = true
-        end
-    end
-
-    -- Créer le compte personnel si nécessaire
-    if not hasPersonal then
-        local accountId, iban = CreatePersonalAccount(identifier, playerName)
-        if Config.Debug then
-            print('[NC_BANK] Compte personnel créé pour ' .. playerName .. ' - IBAN: ' .. iban)
         end
     end
 
@@ -184,6 +173,39 @@ AddEventHandler('esx:playerLoaded', function(playerId, xPlayer)
             end
         end
     end
+end)
+
+-- Event: Créer un compte personnel manuellement
+RegisterNetEvent('nc_bank:createPersonalAccount', function()
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+
+    if not xPlayer then return end
+
+    local identifier = xPlayer.identifier
+    local playerName = xPlayer.getName()
+
+    -- Vérifier si le joueur a déjà un compte personnel
+    local accounts = GetPlayerAccounts(identifier)
+    for _, account in pairs(accounts) do
+        if account.account_type == 'personal' then
+            TriggerClientEvent('esx:showNotification', source, 'Vous avez déjà un compte personnel')
+            return
+        end
+    end
+
+    -- Créer le compte personnel
+    local accountId, iban = CreatePersonalAccount(identifier, playerName)
+
+    if Config.Debug then
+        print('[NC_BANK] Compte personnel créé pour ' .. playerName .. ' - IBAN: ' .. iban)
+    end
+
+    TriggerClientEvent('esx:showNotification', source, 'Votre compte bancaire a été créé avec succès!')
+
+    -- Ouvrir l'interface après la création
+    Wait(1000)
+    TriggerClientEvent('nc_bank:openUI', source)
 end)
 
 -- ============================================

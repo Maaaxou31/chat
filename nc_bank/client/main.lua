@@ -71,10 +71,22 @@ function OpenBankUI()
     ESX.TriggerServerCallback('nc_bank:getFullAccountInfo', function(data)
         if data then
             SetNuiFocus(true, true)
-            SendNUIMessage({
-                action = 'openBank',
-                data = data
-            })
+
+            -- Si le joueur n'a pas de compte, afficher la page de création
+            if not data.personalAccount then
+                SendNUIMessage({
+                    action = 'showAccountCreation',
+                    playerName = data.playerName,
+                    startingMoney = Config.StartingMoney or 5000
+                })
+            else
+                -- Sinon, ouvrir l'interface normale
+                SendNUIMessage({
+                    action = 'openBank',
+                    data = data
+                })
+            end
+
             isUIOpen = true
         end
     end)
@@ -176,6 +188,12 @@ RegisterNUICallback('paySalary', function(data, cb)
     if accountId and employeeId then
         TriggerServerEvent('nc_bank:paySalary', accountId, employeeId)
     end
+    cb('ok')
+end)
+
+-- Créer un compte bancaire
+RegisterNUICallback('createAccount', function(data, cb)
+    TriggerServerEvent('nc_bank:createPersonalAccount')
     cb('ok')
 end)
 

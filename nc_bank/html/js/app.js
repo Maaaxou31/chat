@@ -501,6 +501,25 @@ function paySalary(employeeId) {
 }
 
 // ============================================
+// ACCOUNT CREATION
+// ============================================
+
+// Show account creation page
+function showAccountCreation(playerName, startingMoney) {
+    $('#account-holder-name').val(playerName);
+    $('#starting-money').text('$' + startingMoney.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+    $('#account-creation').fadeIn(300);
+}
+
+// Create new account
+function createAccount() {
+    $.post('https://nc_bank/createAccount', JSON.stringify({}), function() {
+        // Fermer la page de création
+        $('#account-creation').fadeOut(300);
+    });
+}
+
+// ============================================
 // NUI MESSAGE HANDLER
 // ============================================
 
@@ -508,6 +527,10 @@ window.addEventListener('message', function(event) {
     const data = event.data;
 
     switch(data.action) {
+        case 'showAccountCreation':
+            showAccountCreation(data.playerName, data.startingMoney);
+            break;
+
         case 'openBank':
             currentData = data.data;
             currentAccount = 'personal';

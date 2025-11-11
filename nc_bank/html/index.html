@@ -10,6 +10,77 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Page de création de compte -->
+    <div id="account-creation" style="display: none;">
+        <div class="creation-wrapper">
+            <div class="creation-header">
+                <span class="logo-icon">🏦</span>
+                <h1>Bienvenue chez NorthCounty Bank</h1>
+                <p class="subtitle">Créez votre compte bancaire personnel</p>
+            </div>
+
+            <div class="creation-content">
+                <div class="welcome-message">
+                    <div class="welcome-icon">✨</div>
+                    <h2>Félicitations!</h2>
+                    <p>Vous êtes sur le point de créer votre premier compte bancaire.</p>
+                </div>
+
+                <div class="account-preview">
+                    <h3>Votre compte comprendra:</h3>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <span class="feature-icon">💳</span>
+                            <div class="feature-text">
+                                <strong>Carte bancaire</strong>
+                                <p>Avec numéro unique et code CVV</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🔢</span>
+                            <div class="feature-text">
+                                <strong>IBAN personnel</strong>
+                                <p>Pour recevoir et envoyer des virements</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🔒</span>
+                            <div class="feature-text">
+                                <strong>Code PIN</strong>
+                                <p>Sécurisez votre compte (par défaut: 1234)</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">💰</span>
+                            <div class="feature-text">
+                                <strong id="starting-money">$5,000</strong>
+                                <p>Argent de départ offert</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="creation-form">
+                    <div class="form-group">
+                        <label>Nom du titulaire</label>
+                        <input type="text" id="account-holder-name" readonly>
+                    </div>
+
+                    <div class="terms-notice">
+                        <p>⚠️ En créant ce compte, vous acceptez les conditions d'utilisation de NorthCounty Bank.</p>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="createAccount()">
+                        🎉 Créer mon compte bancaire
+                    </button>
+                </div>
+            </div>
+
+            <button class="close-btn-creation" onclick="closeBank()">✕</button>
+        </div>
+    </div>
+
+    <!-- Interface bancaire normale -->
     <div id="bank-container" style="display: none;">
         <div class="bank-wrapper">
             <!-- Header -->
