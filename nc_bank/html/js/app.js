@@ -67,6 +67,7 @@ function getCurrentAccount() {
 // Close bank UI
 function closeBank() {
     $('#bank-container').fadeOut(300);
+    $('#account-creation').fadeOut(300);
     $.post('https://nc_bank/close', JSON.stringify({}));
 }
 
@@ -506,6 +507,10 @@ function paySalary(employeeId) {
 
 // Show account creation page
 function showAccountCreation(playerName, startingMoney) {
+    // Reset button state
+    $('.btn-create-modern').prop('disabled', false).css('opacity', '1');
+    $('.btn-text').text('Créer mon compte');
+
     $('#account-holder-name').text(playerName);
     $('#starting-money').text('$' + startingMoney.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
     $('#account-creation').fadeIn(300);
@@ -513,10 +518,14 @@ function showAccountCreation(playerName, startingMoney) {
 
 // Create new account
 function createAccount() {
-    $.post('https://nc_bank/createAccount', JSON.stringify({}), function() {
-        // Fermer la page de création
-        $('#account-creation').fadeOut(300);
-    });
+    // Désactiver le bouton pendant la création
+    $('.btn-create-modern').prop('disabled', true).css('opacity', '0.6');
+    $('.btn-text').text('Création en cours...');
+
+    $.post('https://nc_bank/createAccount', JSON.stringify({}));
+
+    // Le serveur va fermer et rouvrir l'UI avec les données du compte
+    // Pas besoin de fermer ici
 }
 
 // ============================================
@@ -535,6 +544,9 @@ window.addEventListener('message', function(event) {
             currentData = data.data;
             currentAccount = 'personal';
             pinVisible = false;
+
+            // Hide account creation page if visible
+            $('#account-creation').hide();
 
             // Update header
             $('#server-name').text(currentData.serverName);

@@ -193,6 +193,10 @@ end)
 
 -- Créer un compte bancaire
 RegisterNUICallback('createAccount', function(data, cb)
+    -- Fermer l'UI pour permettre la réouverture après création
+    SetNuiFocus(false, false)
+    isUIOpen = false
+
     TriggerServerEvent('nc_bank:createPersonalAccount')
     cb('ok')
 end)
